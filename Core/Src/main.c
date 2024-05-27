@@ -60,8 +60,24 @@ static void MX_USART1_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 uint8_t txMsg[] = "Hello World! ";
-uint8_t rxBuff[20];
-uint8_t patka[] = "-cdc ";
+uint8_t rxBuff[9];
+
+
+uint8_t sens_active_mode[] = {
+		// Start bit Retain Switch command Active upload Retain Retain Retain Retain Checksum
+		// 	  0     1     2     3     4     5     6     7     8
+			0xFF, 0x01, 0x78, 0x40, 0x00, 0x00, 0x00, 0x00, 0x47
+};
+
+uint8_t sens_passive_mode[] = {
+		// Start bit Retain Switch command Active upload Retain Retain Retain Retain Checksum
+		// 	  0     1     2     3     4     5     6     7     8
+		0xFF, 0x01, 0x78, 0x41, 0x00, 0x00, 0x00, 0x00, 0x46
+};
+
+uint8_t sens_get_type[] = { 0xD1 };
+uint8_t sens_get_type_range_unit_decimals[] = { 0xD7 };
+
 
 /* USER CODE END 0 */
 
@@ -104,13 +120,24 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
-		ledBlink(5, 100);
-		HAL_UART_Transmit(&huart1, txMsg, sizeof(txMsg), 100);
+		ledBlink(500, 500);
+		ledBlink(500, 500);
+		ledBlink(500, 500);
+//		HAL_UART_Transmit(&huart1, txMsg, sizeof(txMsg), 100);
 //		CDC_Transmit_FS(txMsg, sizeof(txMsg));
 //		HAL_Delay(200);
-//		CDC_Transmit_FS(patka, sizeof(patka));
+//		CDC_Transmit_FS(txMsg, sizeof(txMsg));
+//		HAL_Delay(5000);
+
+
+		HAL_UART_Transmit(&huart1, sens_active_mode, sizeof(sens_active_mode), 100);
 		HAL_Delay(5000);
-    /* USER CODE END WHILE */
+
+		for (; ; ) {
+			ledBlink(5, 500);
+		}
+
+		/* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 	}
