@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "Led.h"
+#include "usbd_cdc.h"
 
 /* USER CODE END Includes */
 
@@ -59,7 +60,8 @@ static void MX_USART1_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 uint8_t txMsg[] = "Hello World! ";
-uint8_t rxMsg[10];
+uint8_t rxBuff[20];
+uint8_t patka[] = "-cdc ";
 
 /* USER CODE END 0 */
 
@@ -95,6 +97,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
+  HAL_UART_Receive_IT(&huart1, rxBuff, sizeof(rxBuff));
 
   /* USER CODE END 2 */
 
@@ -103,6 +106,9 @@ int main(void)
 	while (1) {
 		ledBlink(5, 100);
 		HAL_UART_Transmit(&huart1, txMsg, sizeof(txMsg), 100);
+//		CDC_Transmit_FS(txMsg, sizeof(txMsg));
+//		HAL_Delay(200);
+//		CDC_Transmit_FS(patka, sizeof(patka));
 		HAL_Delay(5000);
     /* USER CODE END WHILE */
 
@@ -235,6 +241,12 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+//	CDC_Transmit_FS(rxBuff, sizeof(rxBuff));
+//	HAL_Delay(200);
+//	CDC_Transmit_FS(patka, sizeof(patka));
+	HAL_UART_Receive_IT(&huart1, rxBuff, sizeof(rxBuff)); //You need to toggle a breakpoint on this line!
+}
 
 /* USER CODE END 4 */
 
