@@ -8,10 +8,14 @@
 #ifndef CO_100_H_
 #define CO_100_H_
 
+#define SENSOR_DATA_ERROR ((uint16_t)-1)
+
 	///////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////
-	// ACCORDING TO PDF
-	// TB600B&C Gas Module Communication Protocol_V2.0_20211020
+	// Driver for gas sensor
+	// "TB600C CO 100ppm"
+	// according to manufacturer pdf
+	// "TB600B&C Gas Module Communication Protocol_V2.0_20211020"
 	// www.ecsense.com
 	// www.ecsense.cn
 	///////////////////////////////////////////////////////////////
@@ -23,7 +27,7 @@
 
 	//	COMMAND 1
 	//	Switches to active upload
-	const uint8_t to_active_mode[] = {
+	const uint8_t cmd_set_active_mode[] = {
 			//    0      |    1   |       2        |       3       |   4    |   5    |    6   |    7   |    8
 			// Start bit | Retain | Switch command | Active upload | Retain | Retain | Retain | Retain | Checksum
 			     0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47
@@ -32,7 +36,7 @@
 
 	//	COMMAND 2
 	//	Switches to passive upload
-	const uint8_t to_passive_mode[] = {
+	const uint8_t cmd_set_passive_mode[] = {
 			//    0      |    1   |       2        |    3   |   4    |   5    |    6   |    7   |    8
 			// Start bit | Retain | Switch command | Answer | Retain | Retain | Retain | Retain | Checksum
 			     0xFF,       0x01,       0x78,         0x41,   0x00,    0x00,     0x00,    0x00,    0x46
@@ -46,7 +50,7 @@
 
 	//	COMMAND 3
 	//	Get the sensor type, maximum range, unit, and decimal places: 0xD1
-	const uint8_t get_type_range_unit_decimals_0xD1[] = {
+	const uint8_t cmd_get_type_range_unit_decimals_0xD1[] = {
 			0xD1
 	};
 	// Return value:	(valjda su to vredosti za primer - prim.prev)
@@ -145,10 +149,10 @@
 
 	//	COMMAND 4
 	//	Get the sensor type, maximum range, unit, and decimal places: 0xD7
-	const uint8_t get_type_range_unit_decimals_0xD7[] = {
+	const uint8_t cmd_get_type_range_unit_decimals_0xD7[] = {
 			0xD7
 	};
-	// Return value (ne pise ali valjda je to return value i valjda su ovo vrednosti kao za primer - prim. prev.)
+	// Return value (ne pise izricito u pdf-u ali valjda je to return value - prim. prev.)
 	//	0xFF	0	Command header 1
 	//	0xD7	1	Command header 2
 	//	0x18	2	Sensor type
@@ -171,13 +175,13 @@
 	//
 	//	Unit :
 	//		0x02: unit is mg/m3 and ppm
-	//		0x04: unit is um/m3 and ppb
+	//		0x04: unit is ug/m3 and ppb
 	//		0x08: unit is 10g/m3 and %
 
 
 	//	COMMAND 5
 	//	Actively reading the gas concentration
-	const uint8_t read_gas_concentration[] = {
+	const uint8_t cmd_read_gas_concentration[] = {
 			//    0      |    1   |    2    |    3   |   4    |   5    |    6   |    7   |    8
 			// Start bit | Retain | Command | Retain | Retain | Retain | Retain | Retain | Checksum
 			     0xFF,       0x01,    0x86,     0x00,   0x00,    0x00,     0x00,    0x00,    0x79
@@ -203,7 +207,7 @@
 
 	//	COMMAND 6
 	//	Combined reading command of gas concentration, temperature, humidity
-	const uint8_t read_gas_concentration_temp_and_hmidity[] = {
+	const uint8_t cmd_read_gas_concentration_temp_and_hmidity[] = {
 			//    0      |    1   |    2    |    3   |   4    |   5    |    6   |    7   |    8
 			// Start bit | Retain | Command | Retain | Retain | Retain | Retain | Retain | Checksum
 			     0xFF,       0x01,    0x87,     0x00,   0x00,    0x00,     0x00,    0x00,    0x78
@@ -338,7 +342,7 @@
 
 	// LED OFF
 	// Turn off the running light
-	const uint8_t running_light_off[] = {
+	const uint8_t cmd_running_light_off[] = {
 			//    0      |    1   |    2    |    3   |   4    |   5    |    6   |    7   |    8
 			// Start bit | Retain | Command | Retain | Retain | Retain | Retain | Retain | Checksum
 			     0xFF,       0x01,    0x88,     0x00,   0x00,    0x00,     0x00,    0x00,    0x77
@@ -351,7 +355,7 @@
 
 	// LED ON
 	// Turn on the running light (led koji trepce dok senzor radi - prim. prev.)
-	const uint8_t running_light_on[] = {
+	const uint8_t cmd_running_light_on[] = {
 			//    0      |    1   |    2    |    3   |   4    |   5    |    6   |    7   |    8
 			// Start bit | Retain | Command | Retain | Retain | Retain | Retain | Retain | Checksum
 			     0xFF,       0x01,    0x89,     0x00,   0x00,    0x00,     0x00,    0x00,    0x76
@@ -364,7 +368,7 @@
 
 	// LED STATUS
 	// Query the running light status
-	const uint8_t running_light_get_status[] = {
+	const uint8_t cmd_running_light_get_status[] = {
 			// Start bit | Retain | Command | Retain | Retain | Retain | Retain | Retain | Checksum
 			//    0      |    1   |    2    |    3   |   4    |   5    |    6   |    7   |    8
 			     0xFF,       0x01,    0x8A,     0x00,   0x00,    0x00,     0x00,    0x00,    0x75
