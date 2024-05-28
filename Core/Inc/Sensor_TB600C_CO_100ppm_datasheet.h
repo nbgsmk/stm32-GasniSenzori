@@ -1,12 +1,10 @@
 /*
- * CO.h
+ * Driver for gas sensor "TB600C CO 100ppm"
  *
- *  Created on: May 27, 2024
- *      Author: peca
  */
 
-#ifndef CO_100_H_
-#define CO_100_H_
+#ifndef SENSOR_TB600C_CO_100PPM_H_
+#define SENSOR_TB600C_CO_100PPM_H_
 
 #define SENSOR_DATA_ERROR ((uint16_t)-1)
 
@@ -389,4 +387,4 @@
 	// Status value 1 (light on), 0 (light off
 
 
-#endif /* CO_100_H_ */
+#endif /* SENSOR_TB600C_CO_100PPM_H_ */

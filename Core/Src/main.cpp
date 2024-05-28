@@ -24,10 +24,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "usbd_cdc_if.h"
-#include "Led.h"
 #include "Mux.h"
-#include "CO.h"
 #include "Blinkovi.h"
+#include "CO100.h"
 
 /* USER CODE END Includes */
 
@@ -116,7 +115,7 @@ int main(void)
 		Blinkovi *b = new Blinkovi();
 
 		Mux *mux = new Mux();
-		CO *co = new CO();
+		CO_100 *co = new CO_100();
 
 
 		b->trep(500, 500);

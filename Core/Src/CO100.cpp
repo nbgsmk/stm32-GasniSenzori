@@ -4,7 +4,8 @@
  *
  */
 
-#include "CO.h"
+#include "CO100.h"
+
 #include <stdexcept>
 
 #include <iostream>
@@ -14,11 +15,11 @@
 /**
  * Constructor to create sensor and perform minimal initialization
  */
-CO::CO() {
+CO_100::CO_100() {
 	init();
 }
 
-CO::~CO() {
+CO_100::~CO_100() {
 	// TODO Auto-generated destructor stub
 }
 
@@ -26,7 +27,7 @@ CO::~CO() {
 /**
  * Perform minimal initialization
  */
-void CO::init() {
+void CO_100::init() {
 	send(cmd_set_passive_mode);
 	getProperties_D7();
 //	send(cmd_running_light_off);
@@ -39,7 +40,7 @@ void CO::init() {
 /**
  * Query parameters from the sensor and populate struct
  */
-void CO::getProperties_D7() {
+void CO_100::getProperties_D7() {
 	//
 	// VAZNO!! Saljem COMMAND 4 = "D7". Odgovor je drugaciji nego za D1
 	//
@@ -102,7 +103,7 @@ void CO::getProperties_D7() {
 /**
  * Set active mode: sensor will send measurement data automatically in 1 second intervals
  */
-void CO::setActiveMode() {
+void CO_100::setActiveMode() {
 	send(cmd_set_active_mode);
 }
 
@@ -110,7 +111,7 @@ void CO::setActiveMode() {
 /**
  * Set passive mode: sensor will send measurement data only when requested
  */
-void CO::setPassiveMode() {
+void CO_100::setPassiveMode() {
 	send(cmd_set_passive_mode);
 }
 
@@ -118,14 +119,14 @@ void CO::setPassiveMode() {
 /**
  * @return maximum measurement range from sensor properties
  */
-uint16_t CO::getMaxRange() {
+uint16_t CO_100::getMaxRange() {
 	return sensorProperty.maxRange;
 }
 
 /**
  * @return current gas concentration in ppm
  */
-uint16_t CO::getGasConcentrationPpm() {
+uint16_t CO_100::getGasConcentrationPpm() {
 	uint16_t rezultat;
 	send(cmd_read_gas_concentration);
 
@@ -146,7 +147,7 @@ uint16_t CO::getGasConcentrationPpm() {
 /**
  * @return gas concentration normalized to 0~100% of max measurement range
  */
-uint16_t CO::getGasPercentageOfMax() {
+uint16_t CO_100::getGasPercentageOfMax() {
 	uint16_t rezultat;
 	send(cmd_read_gas_concentration);
 
@@ -167,7 +168,7 @@ uint16_t CO::getGasPercentageOfMax() {
 /**
  * Sensor activity led will blink during operation
  */
-void CO::setLedOn() {
+void CO_100::setLedOn() {
 	send(cmd_running_light_on);
 }
 
@@ -175,7 +176,7 @@ void CO::setLedOn() {
 /**
  * Sensor activity led will be off
  */
-void CO::setLedOff() {
+void CO_100::setLedOff() {
 	send(cmd_running_light_off);
 }
 
@@ -187,7 +188,7 @@ void CO::setLedOff() {
 /**
  * dummy function to send commands to sensor
  */
-void CO::send(const uint8_t[]) {
+void CO_100::send(const uint8_t[]) {
 
 }
 
@@ -195,7 +196,7 @@ void CO::send(const uint8_t[]) {
 /**
  * @return dummy 9-element array of measurement data (see datasheet)
  */
-std::vector<uint8_t> CO::receive9() {
+std::vector<uint8_t> CO_100::receive9() {
 	std::vector<uint8_t> vector(9);
 	return vector;
 }
@@ -205,7 +206,7 @@ std::vector<uint8_t> CO::receive9() {
 /**
  * @return dummy 13-element array of measurement data (see datasheet)
  */
-std::vector<uint8_t> CO::receive13() {
+std::vector<uint8_t> CO_100::receive13() {
 	std::vector<uint8_t> vector(13);
 	return vector;
 }

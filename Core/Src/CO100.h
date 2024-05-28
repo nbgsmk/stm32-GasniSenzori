@@ -3,22 +3,22 @@
  *
  */
 
-#ifndef SRC_CO_H_
-#define SRC_CO_H_
+#ifndef SRC_CO100_H_
+#define SRC_CO100_H_
 
 
 #include <vector>
 #include <stdint.h>
 
-#include "CO_100.h"
+#include <Sensor_TB600C_CO_100ppm_datasheet.h>
 
 #define MUX_ADR 0b001			// CONFIG mux adresa ovog senzora
 
-class CO {
+class CO_100 {
 
 public:
-	CO();
-	virtual ~CO();
+	CO_100();
+	virtual ~CO_100();
 
 	std::vector<uint8_t> rxBuff[200];	// bytes received from UART
 
@@ -54,4 +54,4 @@ private:
 
 };
 
-#endif /* SRC_CO_H_ */
+#endif /* SRC_CO100_H_ */
