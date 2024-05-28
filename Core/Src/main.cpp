@@ -23,8 +23,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "usbd_cdc_if.h"
 #include "Led.h"
-#include "CO_100.h"
+#include "Mux.h"
+#include "CO.h"
+#include "Blinkovi.h"
 
 /* USER CODE END Includes */
 
@@ -109,10 +112,18 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
-		ledBlink(500, 500);
-		ledBlink(500, 500);
-		ledBlink(500, 500);
-//		HAL_UART_Transmit(&huart1, txMsg, sizeof(txMsg), 100);
+
+		Blinkovi *b = new Blinkovi();
+
+		Mux *mux = new Mux();
+		CO *co = new CO();
+
+
+		b->trep(500, 500);
+		b->trep(500, 500);
+		b->trep(500, 500);
+
+		HAL_UART_Transmit(&huart1, txMsg, sizeof(txMsg), 100);
 //		CDC_Transmit_FS(txMsg, sizeof(txMsg));
 //		HAL_Delay(200);
 //		CDC_Transmit_FS(txMsg, sizeof(txMsg));
@@ -123,7 +134,7 @@ int main(void)
 		HAL_Delay(5000);
 
 		for (; ; ) {
-			ledBlink(5, 500);
+			b->trep(5, 500);
 		}
 
 		/* USER CODE END WHILE */
