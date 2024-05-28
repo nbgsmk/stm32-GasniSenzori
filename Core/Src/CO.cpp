@@ -185,7 +185,15 @@ void CO::setLedOff() {
 //////////////////
 
 /**
- * @return dummy function to return a 9-element array of measurement data (see datasheet)
+ * dummy function to send commands to sensor
+ */
+void CO::send(const uint8_t[]) {
+
+}
+
+
+/**
+ * @return dummy 9-element array of measurement data (see datasheet)
  */
 std::vector<uint8_t> CO::receive9() {
 	std::vector<uint8_t> vector(9);
@@ -195,7 +203,7 @@ std::vector<uint8_t> CO::receive9() {
 
 
 /**
- * @return dummy function to return a 13-element array of measurement data (see datasheet)
+ * @return dummy 13-element array of measurement data (see datasheet)
  */
 std::vector<uint8_t> CO::receive13() {
 	std::vector<uint8_t> vector(13);
