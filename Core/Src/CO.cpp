@@ -1,4 +1,5 @@
 /*
+ * Driver for "TB600C CO 100ppm" sensor
  * CO.cpp
  *
  */
@@ -10,6 +11,9 @@
 #include <string>
 #include <cstring>
 
+/**
+ * Constructor to create sensor and perform minimal initialization
+ */
 CO::CO() {
 	init();
 }
@@ -19,7 +23,9 @@ CO::~CO() {
 }
 
 
-
+/**
+ * Perform minimal initialization
+ */
 void CO::init() {
 	send(cmd_set_passive_mode);
 	getProperties_D7();
@@ -30,7 +36,9 @@ void CO::init() {
 }
 
 
-
+/**
+ * Query parameters from the sensor and populate struct
+ */
 void CO::getProperties_D7() {
 	//
 	// VAZNO!! Saljem COMMAND 4 = "D7". Odgovor je drugaciji nego za D1
@@ -91,19 +99,32 @@ void CO::getProperties_D7() {
 }
 
 
+/**
+ * Set active mode: sensor will send measurement data automatically in 1 second intervals
+ */
 void CO::setActiveMode() {
 	send(cmd_set_active_mode);
 }
 
+
+/**
+ * Set passive mode: sensor will send measurement data only when requested
+ */
 void CO::setPassiveMode() {
 	send(cmd_set_passive_mode);
 }
 
 
+/**
+ * @return maximum measurement range from sensor properties
+ */
 uint16_t CO::getMaxRange() {
 	return sensorProperty.maxRange;
 }
 
+/**
+ * @return current gas concentration in ppm
+ */
 uint16_t CO::getGasConcentrationPpm() {
 	uint16_t rezultat;
 	send(cmd_read_gas_concentration);
@@ -122,6 +143,9 @@ uint16_t CO::getGasConcentrationPpm() {
 }
 
 
+/**
+ * @return gas concentration normalized to 0~100% of max measurement range
+ */
 uint16_t CO::getGasPercentageOfMax() {
 	uint16_t rezultat;
 	send(cmd_read_gas_concentration);
@@ -140,10 +164,17 @@ uint16_t CO::getGasPercentageOfMax() {
 }
 
 
+/**
+ * Sensor activity led will blink during operation
+ */
 void CO::setLedOn() {
 	send(cmd_running_light_on);
 }
 
+
+/**
+ * Sensor activity led will be off
+ */
 void CO::setLedOff() {
 	send(cmd_running_light_off);
 }
@@ -153,6 +184,9 @@ void CO::setLedOff() {
 // pomocnici
 //////////////////
 
+/**
+ * @return dummy function to return a 9-element array of measurement data (see datasheet)
+ */
 std::vector<uint8_t> CO::receive9() {
 	std::vector<uint8_t> vector(9);
 	return vector;
@@ -160,6 +194,9 @@ std::vector<uint8_t> CO::receive9() {
 
 
 
+/**
+ * @return dummy function to return a 13-element array of measurement data (see datasheet)
+ */
 std::vector<uint8_t> CO::receive13() {
 	std::vector<uint8_t> vector(13);
 	return vector;
