@@ -34,6 +34,7 @@ public:
 
 	// stm32 specific
 	void setUartHandle(UART_HandleTypeDef huart);
+	void sendTxtDUMMY(const std::vector<uint8_t> txt);
 
 private:
 	struct {

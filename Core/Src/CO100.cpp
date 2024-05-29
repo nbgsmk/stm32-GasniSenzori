@@ -37,9 +37,8 @@ CO_100::~CO_100() {
 
 
 // stm32 specific
-void CO_100::setUartHandle(UART_HandleTypeDef sensuart) {
-	uart = sensuart;
-
+void CO_100::setUartHandle(UART_HandleTypeDef sensorUart) {
+	uart = sensorUart;
 }
 
 
@@ -207,15 +206,18 @@ void CO_100::setLedOff() {
 /**
  * dummy function to send commands to sensor
  */
-void CO_100::send(vector<uint8_t> txCmd) {
+void CO_100::send(const vector<uint8_t> txCmd) {
 	int s = txCmd.size();
 	uint8_t txA[s];
 	std::copy(txCmd.begin(), txCmd.end(), txA);
 
-	HAL_UART_Transmit(&uart, txA, sizeof(*txA), 100);
+	HAL_UART_Transmit(&uart, txA, sizeof(txA), 100);
 }
 
 
+void CO_100::sendTxtDUMMY(const std::vector<uint8_t> txt) {
+	send(txt);
+}
 
 /**
  * @return dummy 9-element array of measurement data (see datasheet)

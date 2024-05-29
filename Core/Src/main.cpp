@@ -62,7 +62,7 @@ static void MX_USART1_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t txMsg[] = "Hello World! ";
+uint8_t txMsg[] = "Hello from main.cpp! ";
 uint8_t rxBuff[9];
 
 
@@ -119,15 +119,27 @@ int main(void)
 		co->setUartHandle(huart1);
 //		co->init();
 
+//		for (int i = 0; i < 10; ++i) {
+//			const std::vector<uint8_t> tkt = {'A', 'B', 'C', 'd', '\n'};
+//			b->trep(50, 50);
+//			HAL_UART_Transmit(&huart1, txMsg, sizeof(txMsg), 100);
+//			co->sendTxtDUMMY(tkt);
+//			HAL_Delay(500);
+//		}
+
+
+		b->trep(50, 50);
+		b->trep(50, 50);
+		b->trep(50, 50);
 
 		b->trep(500, 500);
 		b->trep(500, 500);
 		b->trep(500, 500);
 
-		HAL_Delay(10000);
-		co->setLedOff();
 		HAL_Delay(10000);
 		co->setLedOn();
+		HAL_Delay(10000);
+		co->setLedOff();
 
 
 		for (; ; ) {
@@ -280,9 +292,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-//	CDC_Transmit_FS(rxBuff, sizeof(rxBuff));
-//	HAL_Delay(200);
-//	CDC_Transmit_FS(patka, sizeof(patka));
 	HAL_UART_Receive_IT(&huart1, rxBuff, sizeof(rxBuff)); //You need to toggle a breakpoint on this line!
 }
 
