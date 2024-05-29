@@ -23,8 +23,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "Led.h"
-#include "CO_100.h"
+#include "usbd_cdc_if.h"
+#include "Mux.h"
+#include "Blinkovi.h"
+#include "CO100.h"
 
 /* USER CODE END Includes */
 
@@ -109,21 +111,41 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
-		ledBlink(500, 500);
-		ledBlink(500, 500);
-		ledBlink(500, 500);
-//		HAL_UART_Transmit(&huart1, txMsg, sizeof(txMsg), 100);
+
+		Blinkovi *b = new Blinkovi();
+
+		Mux *mux = new Mux();
+		CO_100 *co = new CO_100();
+		co->setUartHandle(huart1);
+//		co->init();
+
+
+		b->trep(500, 500);
+		b->trep(500, 500);
+		b->trep(500, 500);
+
+		HAL_Delay(10000);
+		co->setLedOff();
+		HAL_Delay(10000);
+		co->setLedOn();
+
+
+		for (; ; ) {
+			b->trep(5, 50);
+		}
+
+		HAL_UART_Transmit(&huart1, txMsg, sizeof(txMsg), 100);
 //		CDC_Transmit_FS(txMsg, sizeof(txMsg));
 //		HAL_Delay(200);
 //		CDC_Transmit_FS(txMsg, sizeof(txMsg));
 //		HAL_Delay(5000);
 
 
-		HAL_UART_Transmit(&huart1, to_active_mode, sizeof(to_active_mode), 100);
+//		HAL_UART_Transmit(&huart1, cmd_set_active_mode, sizeof(cmd_set_active_mode), 100);
 		HAL_Delay(5000);
 
 		for (; ; ) {
-			ledBlink(5, 500);
+			b->trep(5, 500);
 		}
 
 		/* USER CODE END WHILE */
