@@ -1,5 +1,5 @@
 /*
- * CO.h
+ * CO100.h
  *
  */
 
@@ -22,6 +22,7 @@ public:
 
 	std::vector<uint8_t> rxBuff[200];	// bytes received from UART
 
+	void init();				// inicijalizuj senzor, podesi passive mode, proveri tip
 	void setActiveMode();
 	void setPassiveMode();
 	void setLedOn();
@@ -31,6 +32,8 @@ public:
 	uint16_t getGasConcentrationPpm();	// koncentracija gasa ppm
 	uint16_t getGasPercentageOfMax();	// koncentracija 0~100% od maksimalnog merenja senzora
 
+	// stm32 specific
+	void setUartHandle(UART_HandleTypeDef huart);
 
 private:
 	struct {
@@ -41,16 +44,13 @@ private:
 		uint8_t sign;
 	} sensorProperty;
 	bool runningLed;
-	void init();				// inicijalizuj senzor, podesi passive mode, proveri tip
 	void getProperties_D7();				// popuni struct sa podacima o senzoru
 
 
 	// dummy funkcije umesto uarta za pocetak
-	void send(const uint8_t[]);			// dummy - posalji komande senzoru
+	void send(std::vector<uint8_t> txCmd);			// dummy - posalji komande senzoru
 	std::vector<uint8_t> receive9();	// dummy - vraca odgovor senzora
 	std::vector<uint8_t> receive13();	// dummy - vraca odgovor senzora
-
-
 
 };
 

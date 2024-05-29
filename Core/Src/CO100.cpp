@@ -1,26 +1,45 @@
 /*
  * Driver for "TB600C CO 100ppm" sensor
- * CO.cpp
+ * CO100.cpp
  *
  */
 
-#include "CO100.h"
+// stm32 specific
+#include "main.h"
+#include "usb_device.h"
+#include "usbd_cdc.h"
+#include "usbd_cdc_if.h"
+UART_HandleTypeDef uart;
 
+// C++ standard
 #include <stdexcept>
-
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <array>
+using namespace std;
+
+// hardware driver
+#include "CO100.h"
+
+
 
 /**
  * Constructor to create sensor and perform minimal initialization
  */
 CO_100::CO_100() {
-	init();
+
 }
 
 CO_100::~CO_100() {
 	// TODO Auto-generated destructor stub
+}
+
+
+// stm32 specific
+void CO_100::setUartHandle(UART_HandleTypeDef sensuart) {
+	uart = sensuart;
+
 }
 
 
@@ -131,7 +150,7 @@ uint16_t CO_100::getGasConcentrationPpm() {
 	send(cmd_read_gas_concentration);
 
 	// TODO odgovor iz interrupta
-	std::vector<uint8_t> reply = receive9();
+	vector<uint8_t> reply = receive9();
 	bool hdr = (reply[0]==0xFF)  && (reply[1]==0x86);	// reply header ok?
 	if (hdr) {
 		uint16_t max = (reply[4] << 8) | (reply[5]);
@@ -152,7 +171,7 @@ uint16_t CO_100::getGasPercentageOfMax() {
 	send(cmd_read_gas_concentration);
 
 	// TODO odgovor iz interrupta
-	std::vector<uint8_t> reply = receive9();
+	vector<uint8_t> reply = receive9();
 	bool hdr = (reply[0]==0xFF)  && (reply[1]==0x86);	// reply header ok?
 	if (hdr) {
 		uint16_t max = (reply[4] << 8) | (reply[5]);
@@ -188,9 +207,14 @@ void CO_100::setLedOff() {
 /**
  * dummy function to send commands to sensor
  */
-void CO_100::send(const uint8_t[]) {
+void CO_100::send(vector<uint8_t> txCmd) {
+	int s = txCmd.size();
+	uint8_t txA[s];
+	std::copy(txCmd.begin(), txCmd.end(), txA);
 
+	HAL_UART_Transmit(&uart, txA, sizeof(*txA), 100);
 }
+
 
 
 /**
@@ -210,4 +234,6 @@ std::vector<uint8_t> CO_100::receive13() {
 	std::vector<uint8_t> vector(13);
 	return vector;
 }
+
+
 

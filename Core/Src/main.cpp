@@ -116,11 +116,23 @@ int main(void)
 
 		Mux *mux = new Mux();
 		CO_100 *co = new CO_100();
+//		co->setUartHandle(huart1);
 
 
 		b->trep(500, 500);
 		b->trep(500, 500);
 		b->trep(500, 500);
+
+		for (; ; ) {
+			b->trep(5, 500);
+		}
+		HAL_Delay(10000);
+		co->setLedOff();
+		HAL_Delay(10000);
+		co->setLedOn();
+
+
+
 
 		HAL_UART_Transmit(&huart1, txMsg, sizeof(txMsg), 100);
 //		CDC_Transmit_FS(txMsg, sizeof(txMsg));
@@ -129,7 +141,7 @@ int main(void)
 //		HAL_Delay(5000);
 
 
-		HAL_UART_Transmit(&huart1, cmd_set_active_mode, sizeof(cmd_set_active_mode), 100);
+//		HAL_UART_Transmit(&huart1, cmd_set_active_mode, sizeof(cmd_set_active_mode), 100);
 		HAL_Delay(5000);
 
 		for (; ; ) {
