@@ -46,6 +46,7 @@ void CO_100::setUartHandle(UART_HandleTypeDef sensorUart) {
  * Perform minimal initialization
  */
 void CO_100::init() {
+	HAL_Delay(7000);	// sudeci po led diodi na senzoru, potrebno je nekoliko sekundi da se inicijalizuje. Negde se pominje 5 sec nakon low power moda. A koliko posle ukljucenja?
 	send(cmd_set_passive_mode);
 	getProperties_D7();
 //	send(cmd_running_light_off);

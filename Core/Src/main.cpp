@@ -116,8 +116,6 @@ int main(void)
 
 		Mux *mux = new Mux();
 		CO_100 *co = new CO_100();
-		co->setUartHandle(huart1);
-//		co->init();
 
 //		for (int i = 0; i < 10; ++i) {
 //			const std::vector<uint8_t> tkt = {'A', 'B', 'C', 'd', '\n'};
@@ -126,27 +124,23 @@ int main(void)
 //			co->sendTxtDUMMY(tkt);
 //			HAL_Delay(500);
 //		}
+//		b->trep(500, 500);
+//		b->trep(500, 500);
+//		b->trep(500, 500);
+//		for (; ; ) {
+//			b->trep(5, 50);
+//		}
 
-
-		b->trep(50, 50);
-		b->trep(50, 50);
-		b->trep(50, 50);
-
-		b->trep(500, 500);
-		b->trep(500, 500);
-		b->trep(500, 500);
-
-		HAL_Delay(10000);
-		co->setLedOn();
-		HAL_Delay(10000);
-		co->setLedOff();
-
-
-		for (; ; ) {
+		co->setUartHandle(huart1);
+		co->init();
+		for ( ; ; ) {
 			b->trep(5, 50);
+			auto x = co->getGasConcentrationPpm();
+			HAL_Delay(1000);
 		}
 
-		HAL_UART_Transmit(&huart1, txMsg, sizeof(txMsg), 100);
+
+//		HAL_UART_Transmit(&huart1, txMsg, sizeof(txMsg), 100);
 //		CDC_Transmit_FS(txMsg, sizeof(txMsg));
 //		HAL_Delay(200);
 //		CDC_Transmit_FS(txMsg, sizeof(txMsg));
@@ -293,6 +287,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	HAL_UART_Receive_IT(&huart1, rxBuff, sizeof(rxBuff)); //You need to toggle a breakpoint on this line!
+	int a = 1;
 }
 
 /* USER CODE END 4 */
