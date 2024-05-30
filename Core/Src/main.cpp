@@ -119,15 +119,30 @@ int main(void)
 
 		Mux *mux = new Mux();
 		CO_100 *co = new CO_100();
-//		co->setUartHandle(huart1);
-//		co->init();
+		b->trep(50, 300);
+		b->trep(50, 300);
+		b->trep(50, 300);
 
-		co->setUartHandle(huart2);
-		co->sendAscii(NULL);
+		if (1==0) {
+			// talk to sensor
+			co->setSensorUart(huart1);
+			co->setDebugUart(huart2);
+			co->init();
 
-		for (; ; ) {
-			b->trep(5, 1000);
-//			co->sendAscii(NULL);
+			for (; ; ) {
+				b->trep(5, 1000);
+				co->sendAscii(txMsg);
+			}
+		} else {
+			// talk to debug uart
+			co->setSensorUart(huart2);
+			co->setDebugUart(huart2);
+			co->sendAscii(NULL);
+
+			for (; ; ) {
+				b->trep(5, 1000);
+				co->sendAscii(txMsg);
+			}
 		}
 
 		b->trep(500, 500);

@@ -33,7 +33,8 @@ public:
 	uint16_t getGasPercentageOfMax();	// koncentracija 0~100% od maksimalnog merenja senzora
 
 	// stm32 specific and debug only
-	void setUartHandle(UART_HandleTypeDef huart);
+	void setSensorUart(UART_HandleTypeDef huart);
+	void setDebugUart(UART_HandleTypeDef huart);
 	void sendAscii(uint8_t plainTxt[]);
 
 

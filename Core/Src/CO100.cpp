@@ -10,6 +10,7 @@
 #include "usbd_cdc.h"
 #include "usbd_cdc_if.h"
 UART_HandleTypeDef hUrt;
+UART_HandleTypeDef hUrtDbg;
 
 // C++ standard
 #include <stdexcept>
@@ -37,8 +38,12 @@ CO_100::~CO_100() {
 
 
 // stm32 specific
-void CO_100::setUartHandle(UART_HandleTypeDef sensorUart) {
+void CO_100::setSensorUart(UART_HandleTypeDef sensorUart) {
 	hUrt = sensorUart;
+
+}
+void CO_100::setDebugUart(UART_HandleTypeDef debugUart) {
+	hUrtDbg = debugUart;
 
 }
 
@@ -217,13 +222,20 @@ void CO_100::send(const CmdStruct_t tx) {
 	std::copy(tx.cmd.begin(), tx.cmd.end(), cmdArray);
 
 	// stm32 specific
-	// start new ISR handler  to receive exactly tx.expectedReplyLen symbols
-	if (tx.expectedReplyLen > 0) {
-		HAL_UART_Receive_IT(&hUrt, rxB, tx.expectedReplyLen);
-	} else {
-		// there is no reply expected. just send the command anyway
-	}
+	// send bytes
 	HAL_UART_Transmit(&hUrt, cmdArray, sizeof(cmdArray), 200);
+	// and immediately wait to receive reply with exactly tx.expectedReplyLen bytes
+	if (tx.expectedReplyLen > 0) {
+		if(HAL_UART_Receive(&hUrt, rxB, tx.expectedReplyLen, 10000)==HAL_OK){
+		    __NOP();
+		    HAL_UART_Transmit(&hUrtDbg, rxB, tx.expectedReplyLen, 200);
+		} else {
+		    __NOP();
+		    uint8_t jbg[] = " no reply \n";
+		    HAL_UART_Transmit(&hUrtDbg, jbg, sizeof(jbg), 200);
+		}
+	}
+
 
 }
 
@@ -254,10 +266,4 @@ void CO_100::sendAscii(uint8_t plainTxt[]){
 	send(cmd);
 }
 
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-//	HAL_UART_Receive_IT(&hUrt, rxBuf, 3);
-	int a = 1;
-	a++;
-}
 

@@ -20,8 +20,7 @@ public:
 	CO_100();
 	virtual ~CO_100();
 
-	std::vector<uint8_t> rxBuffx[200];	// bytes received from UART
-	uint8_t rxBuff[200];	// bytes received from UART
+	uint8_t rxB[50];			// bytes received from UART
 
 	void init();				// inicijalizuj senzor, podesi passive mode, proveri tip
 	void setActiveMode();
@@ -33,8 +32,10 @@ public:
 	uint16_t getGasConcentrationPpm();	// koncentracija gasa ppm
 	uint16_t getGasPercentageOfMax();	// koncentracija 0~100% od maksimalnog merenja senzora
 
-	// stm32 specific
+	// stm32 specific and debug only
 	void setUartHandle(UART_HandleTypeDef huart);
+	void sendAscii(uint8_t plainTxt[]);
+
 
 private:
 	struct {
