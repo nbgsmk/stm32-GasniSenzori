@@ -9,7 +9,7 @@
 #include "usb_device.h"
 #include "usbd_cdc.h"
 #include "usbd_cdc_if.h"
-UART_HandleTypeDef hUrt;
+UART_HandleTypeDef hUart;
 
 // C++ standard
 #include <stdexcept>
@@ -38,7 +38,7 @@ CO_100::~CO_100() {
 
 // stm32 specific
 void CO_100::setUartHandle(UART_HandleTypeDef sensorUart) {
-	hUrt = sensorUart;
+	hUart = sensorUart;
 
 }
 
@@ -219,11 +219,11 @@ void CO_100::send(const CmdStruct_t tx) {
 	// stm32 specific
 	// start new ISR handler  to receive exactly tx.expectedReplyLen symbols
 	if (tx.expectedReplyLen > 0) {
-		HAL_UART_Receive_IT(&hUrt, rxB, tx.expectedReplyLen);
+		HAL_UART_Receive_IT(&hUart, rxBuff, tx.expectedReplyLen);
 	} else {
 		// there is no reply expected. just send the command anyway
 	}
-	HAL_UART_Transmit(&hUrt, cmdArray, sizeof(cmdArray), 200);
+	HAL_UART_Transmit(&hUart, cmdArray, sizeof(*cmdArray), 100);
 
 }
 
@@ -248,16 +248,4 @@ std::vector<uint8_t> CO_100::receive13() {
 }
 
 
-void CO_100::sendAscii(uint8_t plainTxt[]){
-	const std::vector<uint8_t> txt = { 'x', 'W', 'q', '\n' };
-	const CmdStruct_t cmd = { txt, txt.size() };
-	send(cmd);
-}
-
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-//	HAL_UART_Receive_IT(&hUrt, rxBuf, 3);
-	int a = 1;
-	a++;
-}
 
