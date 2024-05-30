@@ -10,8 +10,7 @@
 #include "Blinkovi.h"
 
 Blinkovi::Blinkovi() {
-	// TODO Auto-generated constructor stub
-
+	ledoff();
 }
 
 Blinkovi::~Blinkovi() {

@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <stdint.h>
+#include <string>
 
 #include <Sensor_TB600C_CO_100ppm_datasheet.h>
 
@@ -27,7 +28,9 @@ public:
 	void setPassiveMode();
 	void setLedOn();
 	void setLedOff();
+	void getLedStatus();
 
+	void getProperties_D7();				// popuni struct sa podacima o senzoru
 	uint16_t getMaxRange();				// maksimalni raspon merenja senzora
 	uint16_t getGasConcentrationPpm();	// koncentracija gasa ppm
 	uint16_t getGasPercentageOfMax();	// koncentracija 0~100% od maksimalnog merenja senzora
@@ -35,7 +38,7 @@ public:
 	// stm32 specific and debug only
 	void setSensorUart(UART_HandleTypeDef huart);
 	void setDebugUart(UART_HandleTypeDef huart);
-	void sendAscii(uint8_t plainTxt[]);
+	void sendCmd(const uint8_t *plainTxt, uint16_t size);
 
 
 private:
@@ -47,7 +50,6 @@ private:
 		uint8_t sign;
 	} sensorProperty;
 	bool runningLed;
-	void getProperties_D7();				// popuni struct sa podacima o senzoru
 
 
 	// dummy funkcije umesto uarta za pocetak

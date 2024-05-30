@@ -63,7 +63,7 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t txMsg[] = "Hello World! ";
+const uint8_t txMsg[] = "Hello World! ";
 uint8_t rxBuff[9];
 
 
@@ -119,29 +119,56 @@ int main(void)
 
 		Mux *mux = new Mux();
 		CO_100 *co = new CO_100();
+		HAL_Delay(2000);
 		b->trep(50, 300);
 		b->trep(50, 300);
 		b->trep(50, 300);
 
-		if (1==0) {
+		if (1==1) {
 			// talk to sensor
 			co->setSensorUart(huart1);
 			co->setDebugUart(huart2);
 			co->init();
+			b->trep(5, 50);
+			co->setLedOn();
+			b->trep(5, 50);
 
-			for (; ; ) {
-				b->trep(5, 1000);
-				co->sendAscii(txMsg);
+			co->setLedOn();
+			co->getLedStatus();
+
+			co->setLedOff();
+			co->getLedStatus();
+
+			co->getGasConcentrationPpm();
+			co->getProperties_D7();
+
+			co->setLedOn();
+			co->getLedStatus();
+
+			b->trep(5, 50);
+			HAL_Delay(5000);
+			b->trep(5, 50);
+
+
+			for (;;) {
+				b->trep(5, 50);
+				co->setLedOn();
+				HAL_Delay(2000);
+
+				co->setLedOff();
+				HAL_Delay(2000);
+
 			}
 		} else {
 			// talk to debug uart
 			co->setSensorUart(huart2);
 			co->setDebugUart(huart2);
-			co->sendAscii(NULL);
-
-			for (; ; ) {
-				b->trep(5, 1000);
-				co->sendAscii(txMsg);
+//			uint8_t s[] = {'p', 'a', 't', 'K', 'A'};
+			uint8_t s[] = {'p', 'a', 't'};
+//			uint8_t s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
+			for (;;) {
+				b->trep(5, 5);
+				co->sendCmd(s, sizeof(s));
 			}
 		}
 

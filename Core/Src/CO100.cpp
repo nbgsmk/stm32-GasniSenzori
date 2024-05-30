@@ -12,6 +12,7 @@
 UART_HandleTypeDef hUrt;
 UART_HandleTypeDef hUrtDbg;
 
+
 // C++ standard
 #include <stdexcept>
 #include <iostream>
@@ -33,7 +34,7 @@ CO_100::CO_100() {
 }
 
 CO_100::~CO_100() {
-	// TODO Auto-generated destructor stub
+
 }
 
 
@@ -55,8 +56,8 @@ void CO_100::init() {
 	// stm32 specific
 	HAL_Delay(10000);
 
-	send(cmdSetPassiveMode);
-	getProperties_D7();
+//	send(cmdSetPassiveMode);
+//	getProperties_D7();
 //	send(cmdRunningLightOff);
 
 //	send(cmdSetActiveMode);
@@ -71,7 +72,7 @@ void CO_100::getProperties_D7() {
 	//
 	// VAZNO!! Saljem COMMAND 4 = "D7". Odgovor je drugaciji nego za D1
 	//
-	send(cmdGetTypeRangeUnitDecimals0xd7);
+	send(cmdGetTypeRangeUnitDecimals0xd1);
 
 	// TODO odgovor iz interrupta
 	std::vector<uint8_t> reply = receive9();
@@ -165,7 +166,7 @@ uint16_t CO_100::getGasConcentrationPpm() {
 		uint16_t ppm = (reply[6] << 8) | (reply[7]);
 		rezultat = ppm;
 	} else {
-		rezultat = SENSOR_DATA_ERROR;
+//		rezultat = SENSOR_DATA_ERROR;	// TODO ukljuciti na kraju
 	}
 	return rezultat;
 }
@@ -178,7 +179,6 @@ uint16_t CO_100::getGasPercentageOfMax() {
 	uint16_t rezultat;
 	send(cmdReadGasConcentration);
 
-	// TODO odgovor iz interrupta
 	vector<uint8_t> reply = receive9();
 	bool hdr = (reply[0]==0xFF)  && (reply[1]==0x86);	// reply header ok?
 	if (hdr) {
@@ -208,6 +208,14 @@ void CO_100::setLedOff() {
 }
 
 
+/**
+ * Sensor activity led will be off
+ */
+void CO_100::getLedStatus() {
+	send(cmdRunningLightGetStatus);
+}
+
+
 
 //////////////////
 // pomocnici
@@ -223,16 +231,25 @@ void CO_100::send(const CmdStruct_t tx) {
 
 	// stm32 specific
 	// send bytes
-	HAL_UART_Transmit(&hUrt, cmdArray, sizeof(cmdArray), 200);
-	// and immediately wait to receive reply with exactly tx.expectedReplyLen bytes
+//    uint8_t c[] = "\n cmd=";
+//    HAL_UART_Transmit(&hUrtDbg, c, sizeof(c), 500);
+//    HAL_UART_Transmit(&hUrtDbg, cmdArray, sizeof(cmdArray), 500);
+
+
+    // send command and immediately wait to receive reply of tx.expectedReplyLen bytes
+    HAL_UART_Transmit(&hUrt, cmdArray, sizeof(cmdArray), 500);
 	if (tx.expectedReplyLen > 0) {
 		if(HAL_UART_Receive(&hUrt, rxB, tx.expectedReplyLen, 10000)==HAL_OK){
 		    __NOP();
-		    HAL_UART_Transmit(&hUrtDbg, rxB, tx.expectedReplyLen, 200);
+		    uint8_t r[] = " reply=";
+		    HAL_UART_Transmit(&hUrtDbg, r, sizeof(r), 500);
+		    HAL_UART_Transmit(&hUrtDbg, rxB, tx.expectedReplyLen, 500);
+		    uint8_t c[] = ";\n";
+		    HAL_UART_Transmit(&hUrtDbg, c, sizeof(c), 500);
 		} else {
 		    __NOP();
-		    uint8_t jbg[] = " no reply \n";
-		    HAL_UART_Transmit(&hUrtDbg, jbg, sizeof(jbg), 200);
+		    uint8_t jbg[] = "\n no reply \n";
+		    HAL_UART_Transmit(&hUrtDbg, jbg, sizeof(jbg), 500);
 		}
 	}
 
@@ -260,9 +277,9 @@ std::vector<uint8_t> CO_100::receive13() {
 }
 
 
-void CO_100::sendAscii(uint8_t plainTxt[]){
-	const std::vector<uint8_t> txt = { 'x', 'W', 'q', '\n' };
-	const CmdStruct_t cmd = { txt, txt.size() };
+void CO_100::sendCmd(const uint8_t *plainTxt, uint16_t size){
+	std::vector<uint8_t> s(plainTxt, plainTxt + size);
+	CmdStruct_t cmd = { s, size };
 	send(cmd);
 }
 
