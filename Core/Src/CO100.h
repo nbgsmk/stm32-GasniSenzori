@@ -21,19 +21,21 @@ public:
 	CO_100();
 	virtual ~CO_100();
 
-	uint8_t rxB[50];			// bytes received from UART
+	uint8_t rxB[50];								// bytes received from UART
 
-	void init();				// inicijalizuj senzor, podesi passive mode, proveri tip
+	void init(uint32_t waitSensorStartup_mS);	// inicijalizuj senzor, podesi passive mode, proveri tip
 	void setActiveMode();
 	void setPassiveMode();
 	void setLedOn();
 	void setLedOff();
 	void getLedStatus();
 
-	void getProperties_D7();				// popuni struct sa podacima o senzoru
-	uint16_t getMaxRange();				// maksimalni raspon merenja senzora
-	uint16_t getGasConcentrationPpm();	// koncentracija gasa ppm
-	uint16_t getGasPercentageOfMax();	// koncentracija 0~100% od maksimalnog merenja senzora
+	int getMaxRange();							// maksimalni raspon merenja senzora
+	int getGasConcentrationPpm();				// koncentracija gasa ppm
+	int getGasConcentrationMgM3();				// koncentracija gasa ug/m3
+	int getGasPercentageOfMax();				// koncentracija 0~100% od maksimalnog merenja senzora
+	float getTemperature();					// sve zajedno merimo
+	float getRelativeHumidity();					// sve zajedno merimo
 
 	// stm32 specific and debug only
 	void setSensorUart(UART_HandleTypeDef huart);
@@ -42,20 +44,18 @@ public:
 
 
 private:
+	bool runningLed;
 	struct {
 		uint8_t tip;
 		uint16_t maxRange;
 		char unit_str[15];
 		uint8_t decimals;
 		uint8_t sign;
-	} sensorProperty;
-	bool runningLed;
+	} sensorProperties;
 
+	void getSensorProperties_D7();			// popuni struct sa podacima o senzoru
+	std::vector<uint8_t> send(const CmdStruct_t txCmd);				// dummy - posalji komande senzoru
 
-	// dummy funkcije umesto uarta za pocetak
-	void send(const CmdStruct_t txCmd);			// dummy - posalji komande senzoru
-	std::vector<uint8_t> receive9();	// dummy - vraca odgovor senzora
-	std::vector<uint8_t> receive13();	// dummy - vraca odgovor senzora
 
 };
 

@@ -64,11 +64,6 @@ static void MX_USART2_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 const uint8_t txMsg[] = "Hello World! ";
-uint8_t rxBuff[9];
-
-
-
-
 
 
 /* USER CODE END 0 */
@@ -106,8 +101,7 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-//  HAL_UART_Receive_IT(&huart2, rxBuff, sizeof(rxBuff));
-//  HAL_UART_Receive_IT(&huart2, (uint8_t *)rxBuff, 3);
+
 
   /* USER CODE END 2 */
 
@@ -128,19 +122,14 @@ int main(void)
 			// talk to sensor
 			co->setSensorUart(huart1);
 			co->setDebugUart(huart2);
-			co->init();
-			b->trep(5, 50);
-			co->setLedOn();
+			co->init(2000);
 			b->trep(5, 50);
 
-			co->setLedOn();
-			co->getLedStatus();
-
-			co->setLedOff();
-			co->getLedStatus();
-
-			co->getGasConcentrationPpm();
-			co->getProperties_D7();
+			int ppm = co->getGasConcentrationPpm();
+			int mg = co->getGasConcentrationMgM3();
+			int percOfMax = co->getGasPercentageOfMax();
+			float celsius = co->getTemperature();
+			float rh = co->getRelativeHumidity();
 
 			co->setLedOn();
 			co->getLedStatus();
@@ -152,12 +141,13 @@ int main(void)
 
 			for (;;) {
 				b->trep(5, 50);
-				co->setLedOn();
-				HAL_Delay(2000);
+				int ppm = co->getGasConcentrationPpm();
+				int mg = co->getGasConcentrationMgM3();
+				int percOfMax = co->getGasPercentageOfMax();
+				float celsius = co->getTemperature();
+				float rh = co->getRelativeHumidity();
 
-				co->setLedOff();
-				HAL_Delay(2000);
-
+				HAL_Delay(1000);
 			}
 		} else {
 			// talk to debug uart
@@ -365,11 +355,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-////	HAL_UART_Receive_IT(&huart1, rxBuff, sizeof(rxBuff)); //You need to toggle a breakpoint on this line!
-//	int a = 1;
-//	a++;
-//}
 
 /* USER CODE END 4 */
 
