@@ -10,6 +10,8 @@
 #include "usbd_cdc.h"
 #include "usbd_cdc_if.h"
 UART_HandleTypeDef hUrt;
+UART_HandleTypeDef hUrtDbg;
+
 
 // C++ standard
 #include <stdexcept>
@@ -32,13 +34,17 @@ CO_100::CO_100() {
 }
 
 CO_100::~CO_100() {
-	// TODO Auto-generated destructor stub
+
 }
 
 
 // stm32 specific
-void CO_100::setUartHandle(UART_HandleTypeDef sensorUart) {
+void CO_100::setSensorUart(UART_HandleTypeDef sensorUart) {
 	hUrt = sensorUart;
+
+}
+void CO_100::setDebugUart(UART_HandleTypeDef debugUart) {
+	hUrtDbg = debugUart;
 
 }
 
@@ -46,13 +52,13 @@ void CO_100::setUartHandle(UART_HandleTypeDef sensorUart) {
 /**
  * Perform minimal initialization
  */
-void CO_100::init() {
+void CO_100::init(uint32_t waitSensorStartup_mS) {
 	// stm32 specific
-	HAL_Delay(10000);
+	HAL_Delay(waitSensorStartup_mS);
 
 	send(cmdSetPassiveMode);
-	getProperties_D7();
-//	send(cmdRunningLightOff);
+	send(cmdRunningLightOff);
+	getSensorProperties_D7();
 
 //	send(cmdSetActiveMode);
 //	send(cmdRunningLightOn);
@@ -62,60 +68,58 @@ void CO_100::init() {
 /**
  * Query parameters from the sensor and populate struct
  */
-void CO_100::getProperties_D7() {
+void CO_100::getSensorProperties_D7() {
 	//
 	// VAZNO!! Saljem COMMAND 4 = "D7". Odgovor je drugaciji nego za D1
 	//
-	send(cmdGetTypeRangeUnitDecimals0xd7);
+	vector<uint8_t> reply = send(cmdGetTypeRangeUnitDecimals0xd7);
 
-	// TODO odgovor iz interrupta
-	std::vector<uint8_t> reply = receive9();
-	bool hdr = (reply[0]==0xFF)  && (reply[1]==0xD7);	// reply header ok?
-	uint8_t tip = reply[2];
+	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0xD7);	// reply header ok?
+	uint8_t tip = reply.at(2);
 	if (hdr && tip) {
 		// sensor type ok
-		sensorProperty.tip = tip;
-		sensorProperty.maxRange = (reply[3] << 8) | reply[4];
-		switch (reply[5]) {
+		sensorProperties.tip = tip;
+		sensorProperties.maxRange = (reply.at(3) << 8) | reply.at(4);
+		switch (reply.at(5)) {
 			case 0x02:
-				strcpy(sensorProperty.unit_str, "mg/m3 and ppm");
+				strcpy(sensorProperties.unit_str, "mg/m3 and ppm");
 				break;
 
 			case 0x04:
-				strcpy(sensorProperty.unit_str, "ug/m3 and ppb");
+				strcpy(sensorProperties.unit_str, "ug/m3 and ppb");
 				break;
 
 			case 0x08:
-				strcpy(sensorProperty.unit_str, "10g/m3 and %");
+				strcpy(sensorProperties.unit_str, "10g/m3 and %");
 				break;
 
 			default:
-				strcpy(sensorProperty.unit_str, " _?_ ");
+				strcpy(sensorProperties.unit_str, " _?_ ");
 				break;
 		}
-		uint8_t dec = reply[6] & 0b11110000;	// decimals bit 7~4, sign bits 3~0
-		uint8_t sgn = reply[6] & 0b00001111;	// decimals bit 7~4, sign bits 3~0
+		uint8_t dec = reply.at(6) & 0b11110000;	// decimals bit 7~4, sign bits 3~0
+		uint8_t sgn = reply.at(6) & 0b00001111;	// decimals bit 7~4, sign bits 3~0
 
 		dec = dec >> 4;							// spustim ih skroz na desno
 		uint8_t decimals =	((dec & 0b1000)<<3) |
 							((dec & 0b0100)<<2) |
 							((dec & 0b0010)<<1) |
-							 (dec & 0b0001);	// boKte pita sta sam dobio!
+							 (dec & 0b0001);
 
 		uint16_t sign =		((sgn & 0b1000)<<3) |
 							((sgn & 0b0100)<<2) |
 							((sgn & 0b0010)<<1) |
-							 (sgn & 0b0001);	// boKte pita sta sam dobio!
-		sensorProperty.decimals = decimals;
-		sensorProperty.sign = sign;
+							 (sgn & 0b0001);
+		sensorProperties.decimals = decimals;		// dobije se 4. Jel' moguce da je tolika tacnost?
+		sensorProperties.sign = sign;				// dobije se 0 = "negative inhibition". Koji li im djavo to znaci??
 
 
 	} else {
 		// ENABLE EXCEPTIONS for stm32
 		// Right click the project -> Properties -> C/C++ Build -> Settings -> Tool Settings -> MCU G++ Compiler -> Miscellaneous
 		// add flag -fexceptions
-//FIXME		printf("Wrong sensor type! Expected 0x19, got |%04x|", tip);
-//FIXME		throw std::invalid_argument("Wrong sensor type! Expected 0x19, got ??");		// FIXME dodati ovde hex parametar tip, izbaciti printf
+		printf("Wrong sensor type! Expected 0x19, got |%04x|", tip);
+		throw std::invalid_argument("Wrong sensor type! Expected 0x19, got ??");		// FIXME dodati ovde hex parametar tip, izbaciti printf
 	}
 
 
@@ -141,50 +145,105 @@ void CO_100::setPassiveMode() {
 /**
  * @return maximum measurement range from sensor properties
  */
-uint16_t CO_100::getMaxRange() {
-	return sensorProperty.maxRange;
+int CO_100::getMaxRange() {
+	return (int)sensorProperties.maxRange;
 }
 
 /**
  * @return current gas concentration in ppm
  */
-uint16_t CO_100::getGasConcentrationPpm() {
+int CO_100::getGasConcentrationPpm() {
 	uint16_t rezultat;
-	send(cmdReadGasConcentration);
+	vector<uint8_t> reply = send(cmdReadGasConcentration);
 
-	// TODO odgovor iz interrupta
-	vector<uint8_t> reply = receive9();
-	bool hdr = (reply[0]==0xFF)  && (reply[1]==0x86);	// reply header ok?
+	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x86);		// reply header ok?
 	if (hdr) {
-		uint16_t max = (reply[4] << 8) | (reply[5]);
-		uint16_t ppm = (reply[6] << 8) | (reply[7]);
+		uint16_t ppm = (reply.at(6) * 256) + (reply.at(7));
+		uint16_t max = (reply.at(4) * 256) + (reply.at(5));
 		rezultat = ppm;
 	} else {
 		rezultat = SENSOR_DATA_ERROR;
 	}
-	return rezultat;
+	return (int)rezultat;
 }
+
+
+/**
+ * @return current gas concentration in ppm
+ */
+int CO_100::getGasConcentrationMgM3() {
+	uint16_t rezultat;
+	vector<uint8_t> reply = send(cmdReadGasConcentration);
+
+	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x86);		// reply header ok?
+	if (hdr) {
+		uint16_t mgm3 = (reply.at(2) * 256) + (reply.at(3));
+		uint16_t max = (reply.at(4) * 256) + (reply.at(5));
+		rezultat = mgm3;
+	} else {
+		rezultat = SENSOR_DATA_ERROR;
+	}
+	return (int)rezultat;
+}
+
 
 
 /**
  * @return gas concentration normalized to 0~100% of max measurement range
  */
-uint16_t CO_100::getGasPercentageOfMax() {
+int CO_100::getGasPercentageOfMax() {
 	uint16_t rezultat;
-	send(cmdReadGasConcentration);
+	vector<uint8_t> reply = send(cmdReadGasConcentration);
 
-	// TODO odgovor iz interrupta
-	vector<uint8_t> reply = receive9();
-	bool hdr = (reply[0]==0xFF)  && (reply[1]==0x86);	// reply header ok?
+	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x86);		// reply header ok?
 	if (hdr) {
-		uint16_t max = (reply[4] << 8) | (reply[5]);
-		uint16_t ppm = (reply[6] << 8) | (reply[7]);
-		rezultat = ppm / max;
+		uint16_t ppm = (reply.at(6) * 256) + (reply.at(7));
+		uint16_t max = (reply.at(4) * 256) + (reply.at(5));
+		rezultat = ((float)ppm / (float)max) * 100;
 	} else {
 		rezultat = SENSOR_DATA_ERROR;
 	}
-	return rezultat;	// TESTME ovako ili putem getMaxRange()?
+	return (int)rezultat;
 }
+
+
+/**
+ * @return temperature from combined reading (see datasheet)
+ */
+float CO_100::getTemperature() {
+	uint16_t rezultat;
+	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
+
+	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x87);		// reply header ok?
+	if (hdr) {
+		float temp = ( (reply.at(8) << 8) | (reply.at(9)) ) / 100;
+		float humid = ( (reply.at(10) << 8) | (reply.at(11)) ) / 100;
+		rezultat = temp;
+	} else {
+		rezultat = SENSOR_DATA_ERROR;
+	}
+	return (int)rezultat;
+}
+
+
+/**
+ * @return relative humidity from combined reading (see datasheet)
+ */
+float CO_100::getRelativeHumidity() {
+	uint16_t rezultat;
+	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
+
+	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x87);		// reply header ok?
+	if (hdr) {
+		float temp = ( (reply.at(8) << 8) | (reply.at(9)) ) / 100;
+		float humid = ( (reply.at(10) << 8) | (reply.at(11)) ) / 100;
+		rezultat = humid;
+	} else {
+		rezultat = SENSOR_DATA_ERROR;
+	}
+	return (int)rezultat;
+}
+
 
 
 /**
@@ -203,61 +262,66 @@ void CO_100::setLedOff() {
 }
 
 
+/**
+ * Sensor activity led will be off
+ */
+void CO_100::getLedStatus() {
+	send(cmdRunningLightGetStatus);
+}
+
+
 
 //////////////////
 // pomocnici
 //////////////////
 
+
+
 /**
- * dummy function to send commands to sensor
+ * send raw command to sensor and wait for reply
  */
-void CO_100::send(const CmdStruct_t tx) {
-	int s = tx.cmd.size();
-	uint8_t cmdArray[s];
-	std::copy(tx.cmd.begin(), tx.cmd.end(), cmdArray);
+std::vector<uint8_t> CO_100::send(const CmdStruct_t txStruct) {
+	uint8_t txArr[txStruct.cmd.size()];
+	std::copy(txStruct.cmd.begin(), txStruct.cmd.end(), txArr);
 
 	// stm32 specific
-	// start new ISR handler  to receive exactly tx.expectedReplyLen symbols
-	if (tx.expectedReplyLen > 0) {
-		HAL_UART_Receive_IT(&hUrt, rxB, tx.expectedReplyLen);
-	} else {
-		// there is no reply expected. just send the command anyway
+	// send bytes
+    uint8_t c[] = "\n cmd=";
+    HAL_UART_Transmit(&hUrtDbg, c, sizeof(c), 500);
+    HAL_UART_Transmit(&hUrtDbg, txArr, sizeof(txArr), 500);
+
+
+    // send command and immediately wait to receive tx.expectedReplyLen bytes
+    std::vector<uint8_t> reply;
+    HAL_UART_Transmit(&hUrt, txArr, sizeof(txArr), 500);
+	if (txStruct.expectedReplyLen > 0) {
+		if(HAL_UART_Receive(&hUrt, rxB, txStruct.expectedReplyLen, 10000)==HAL_OK){
+			for (int i = 0; i < txStruct.expectedReplyLen; ++i) {
+				reply.push_back(rxB[i]);
+			}
+
+		    __NOP();
+		    uint8_t r[] = " reply=";
+		    HAL_UART_Transmit(&hUrtDbg, r, sizeof(r), 500);
+		    HAL_UART_Transmit(&hUrtDbg, rxB, txStruct.expectedReplyLen, 500);
+		    uint8_t c[] = ";\n";
+		    HAL_UART_Transmit(&hUrtDbg, c, sizeof(c), 500);
+		} else {
+		    __NOP();
+		    uint8_t jbg[] = "\n no reply \n";
+		    HAL_UART_Transmit(&hUrtDbg, jbg, sizeof(jbg), 500);
+		}
 	}
-	HAL_UART_Transmit(&hUrt, cmdArray, sizeof(cmdArray), 200);
+
+	return reply;
 
 }
 
 
 
-/**
- * @return dummy 9-element array of measurement data (see datasheet)
- */
-std::vector<uint8_t> CO_100::receive9() {
-	std::vector<uint8_t> vector(9);
-	return vector;
-}
-
-
-
-/**
- * @return dummy 13-element array of measurement data (see datasheet)
- */
-std::vector<uint8_t> CO_100::receive13() {
-	std::vector<uint8_t> vector(13);
-	return vector;
-}
-
-
-void CO_100::sendAscii(uint8_t plainTxt[]){
-	const std::vector<uint8_t> txt = { 'x', 'W', 'q', '\n' };
-	const CmdStruct_t cmd = { txt, txt.size() };
+void CO_100::sendCmd(const uint8_t *plainTxt, uint16_t size){
+	std::vector<uint8_t> s(plainTxt, plainTxt + size);
+	CmdStruct_t cmd = { s, size };
 	send(cmd);
-}
-
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-//	HAL_UART_Receive_IT(&hUrt, rxBuf, 3);
-	int a = 1;
-	a++;
 }
 

@@ -23,9 +23,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "usbd_cdc_if.h"
-#include "Mux.h"
 #include "Blinkovi.h"
 #include "CO100.h"
+#include "UartMux.h"
 
 /* USER CODE END Includes */
 
@@ -110,86 +110,92 @@ int main(void)
 	while (1) {
 
 		Blinkovi *b = new Blinkovi();
-
-		Mux *mux = new Mux();
 		CO_100 *co = new CO_100();
+
 		HAL_Delay(2000);
-		b->trep(50, 300);
-		b->trep(50, 300);
-		b->trep(50, 300);
-
-		if (1==1) {
-			// talk to sensor
-			co->setSensorUart(huart1);
-			co->setDebugUart(huart2);
-			co->init(2000);
-			b->trep(5, 50);
-
-			int ppm = co->getGasConcentrationPpm();
-			int mg = co->getGasConcentrationMgM3();
-			int percOfMax = co->getGasPercentageOfMax();
-			float celsius = co->getTemperature();
-			float rh = co->getRelativeHumidity();
-
-			co->setLedOn();
-			co->getLedStatus();
-
-			b->trep(5, 50);
-			HAL_Delay(5000);
-			b->trep(5, 50);
+		b->trep(50, 200);
+		b->trep(50, 200);
+		b->trep(50, 200);
 
 
-			for (;;) {
+		int blok = 2;
+		switch (blok) {
+			case 0: {		// talk to sensor
+				co->setSensorUart(huart1);
+				co->setDebugUart(huart2);
+				co->init(2000);
 				b->trep(5, 50);
+
 				int ppm = co->getGasConcentrationPpm();
 				int mg = co->getGasConcentrationMgM3();
 				int percOfMax = co->getGasPercentageOfMax();
 				float celsius = co->getTemperature();
 				float rh = co->getRelativeHumidity();
 
-				HAL_Delay(1000);
+				co->setLedOn();
+				co->getLedStatus();
+
+				b->trep(5, 50);
+				HAL_Delay(5000);
+				b->trep(5, 50);
+
+
+				for (;;) {
+					b->trep(5, 50);
+					int ppm = co->getGasConcentrationPpm();
+					int mg = co->getGasConcentrationMgM3();
+					int percOfMax = co->getGasPercentageOfMax();
+					float celsius = co->getTemperature();
+					float rh = co->getRelativeHumidity();
+
+					HAL_Delay(1000);
+				}
+				break;
 			}
-		} else {
-			// talk to debug uart
-			co->setSensorUart(huart2);
-			co->setDebugUart(huart2);
-//			uint8_t s[] = {'p', 'a', 't', 'K', 'A'};
-			uint8_t s[] = {'p', 'a', 't'};
-//			uint8_t s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
-			for (;;) {
-				b->trep(5, 5);
-				co->sendCmd(s, sizeof(s));
+
+			case 1: {		// talk to debug uart
+					co->setSensorUart(huart2);
+					co->setDebugUart(huart2);
+					uint8_t s[] = {'z', 'e', 'c'};
+	//				uint8_t s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
+					for (;;) {
+						b->trep(5, 5);
+						co->sendCmd(s, sizeof(s));
+					}
+					break;
 			}
+
+			case 2: {		// test mux
+				UartMux *mux = new UartMux();
+				for ( ; ; ) {
+
+					b->trep(5, 50);
+					mux->setAdr(CO_ADR);
+					HAL_Delay(1000);
+
+					mux->setAdr(H2S_ADR);
+					HAL_Delay(1000);
+
+					mux->setAdr(O2_ADR);
+					HAL_Delay(1000);
+
+					mux->setAdr(itd_adr);
+					HAL_Delay(1000);
+				}
+				break;
+			}
+
+			default: {
+				break;
+			}
+
 		}
-
-		b->trep(500, 500);
-		b->trep(500, 500);
-		b->trep(500, 500);
-
-		HAL_Delay(10000);
-		co->setLedOff();
-		HAL_Delay(10000);
-		co->setLedOn();
-
 
 
 		for (; ; ) {
 			b->trep(5, 50);
 		}
 
-//		HAL_UART_Transmit(&huart1, txMsg, sizeof(txMsg), 100);
-//		CDC_Transmit_FS(txMsg, sizeof(txMsg));
-//		HAL_Delay(200);
-//		CDC_Transmit_FS(txMsg, sizeof(txMsg));
-//		HAL_Delay(5000);
-
-
-//		HAL_UART_Transmit(&huart1, cmd_set_active_mode, sizeof(cmd_set_active_mode), 100);
-		HAL_Delay(5000);
-
-		for (; ; ) {
-			b->trep(5, 500);
-		}
 
     /* USER CODE END WHILE */
 
@@ -334,7 +340,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, SMUX_0_Pin|SMUX_1_Pin|SMUX_2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, UartMuX_3_Pin|UartMuX_2_Pin|UartMuX_1_Pin|SMUX_0_Pin
+                          |SMUX_1_Pin|SMUX_2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : BOARD_LED_Pin */
   GPIO_InitStruct.Pin = BOARD_LED_Pin;
@@ -343,8 +350,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(BOARD_LED_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SMUX_0_Pin SMUX_1_Pin SMUX_2_Pin */
-  GPIO_InitStruct.Pin = SMUX_0_Pin|SMUX_1_Pin|SMUX_2_Pin;
+  /*Configure GPIO pins : UartMuX_3_Pin UartMuX_2_Pin UartMuX_1_Pin SMUX_0_Pin
+                           SMUX_1_Pin SMUX_2_Pin */
+  GPIO_InitStruct.Pin = UartMuX_3_Pin|UartMuX_2_Pin|UartMuX_1_Pin|SMUX_0_Pin
+                          |SMUX_1_Pin|SMUX_2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

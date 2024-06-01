@@ -1,0 +1,49 @@
+/*
+ * UartMux.cpp
+ *
+ *  Created on: May 23, 2024
+ *      Author: peca
+ */
+
+#include <stdint.h>
+
+#include "UartMux.h"
+
+UartMux::UartMux() {
+
+}
+
+UartMux::~UartMux() {
+
+}
+
+
+
+MuxAdr_t adr;
+
+void UartMux::setAdr(MuxAdr_t muxAdresa){
+	adr = muxAdresa;
+	switch (muxAdresa) {
+		case CO_adr:
+			// gpio setuj
+//			HAL_GPIO_WritePin(MX_1_GPIO_Port, GPIO_Pin, PinState), GPIO_Pin)
+			break;
+
+		case H2S_adr:
+			// gpio setuj
+			break;
+
+		case CO2_adr:
+			// gpio setuj
+			break;
+
+		default:
+			// i tako dalje
+			break;
+	};
+
+
+}
+
+
+

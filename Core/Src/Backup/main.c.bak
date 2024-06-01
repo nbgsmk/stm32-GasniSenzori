@@ -23,9 +23,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "usbd_cdc_if.h"
-#include "Mux.h"
 #include "Blinkovi.h"
 #include "CO100.h"
+#include "UartMux.h"
 
 /* USER CODE END Includes */
 
@@ -63,12 +63,7 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t txMsg[] = "Hello World! ";
-uint8_t rxBuff[9];
-
-
-
-
+const uint8_t txMsg[] = "Hello World! ";
 
 
 /* USER CODE END 0 */
@@ -106,8 +101,7 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-//  HAL_UART_Receive_IT(&huart2, rxBuff, sizeof(rxBuff));
-//  HAL_UART_Receive_IT(&huart2, (uint8_t *)rxBuff, 3);
+
 
   /* USER CODE END 2 */
 
@@ -117,17 +111,55 @@ int main(void)
 
 		Blinkovi *b = new Blinkovi();
 
-		Mux *mux = new Mux();
+		UartMux *mux = new UartMux();
 		CO_100 *co = new CO_100();
-//		co->setUartHandle(huart1);
-//		co->init();
+		HAL_Delay(2000);
+		b->trep(50, 300);
+		b->trep(50, 300);
+		b->trep(50, 300);
 
-		co->setUartHandle(huart2);
-		co->sendAscii(NULL);
+		if (1==1) {
+			// talk to sensor
+			co->setSensorUart(huart1);
+			co->setDebugUart(huart2);
+			co->init(2000);
+			b->trep(5, 50);
 
-		for (; ; ) {
-			b->trep(5, 1000);
-//			co->sendAscii(NULL);
+			int ppm = co->getGasConcentrationPpm();
+			int mg = co->getGasConcentrationMgM3();
+			int percOfMax = co->getGasPercentageOfMax();
+			float celsius = co->getTemperature();
+			float rh = co->getRelativeHumidity();
+
+			co->setLedOn();
+			co->getLedStatus();
+
+			b->trep(5, 50);
+			HAL_Delay(5000);
+			b->trep(5, 50);
+
+
+			for (;;) {
+				b->trep(5, 50);
+				int ppm = co->getGasConcentrationPpm();
+				int mg = co->getGasConcentrationMgM3();
+				int percOfMax = co->getGasPercentageOfMax();
+				float celsius = co->getTemperature();
+				float rh = co->getRelativeHumidity();
+
+				HAL_Delay(1000);
+			}
+		} else {
+			// talk to debug uart
+			co->setSensorUart(huart2);
+			co->setDebugUart(huart2);
+//			uint8_t s[] = {'p', 'a', 't', 'K', 'A'};
+			uint8_t s[] = {'p', 'a', 't'};
+//			uint8_t s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
+			for (;;) {
+				b->trep(5, 5);
+				co->sendCmd(s, sizeof(s));
+			}
 		}
 
 		b->trep(500, 500);
@@ -302,7 +334,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, SMUX_0_Pin|SMUX_1_Pin|SMUX_2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, MX_3_Pin|MX_2_Pin|MX_1_Pin|SMUX_0_Pin
+                          |SMUX_1_Pin|SMUX_2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : BOARD_LED_Pin */
   GPIO_InitStruct.Pin = BOARD_LED_Pin;
@@ -311,8 +344,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(BOARD_LED_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SMUX_0_Pin SMUX_1_Pin SMUX_2_Pin */
-  GPIO_InitStruct.Pin = SMUX_0_Pin|SMUX_1_Pin|SMUX_2_Pin;
+  /*Configure GPIO pins : MX_3_Pin MX_2_Pin MX_1_Pin SMUX_0_Pin
+                           SMUX_1_Pin SMUX_2_Pin */
+  GPIO_InitStruct.Pin = MX_3_Pin|MX_2_Pin|MX_1_Pin|SMUX_0_Pin
+                          |SMUX_1_Pin|SMUX_2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -323,11 +358,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-////	HAL_UART_Receive_IT(&huart1, rxBuff, sizeof(rxBuff)); //You need to toggle a breakpoint on this line!
-//	int a = 1;
-//	a++;
-//}
 
 /* USER CODE END 4 */
 

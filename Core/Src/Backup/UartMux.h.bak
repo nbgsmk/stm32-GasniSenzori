@@ -1,0 +1,41 @@
+/*
+ * Mux.h
+ *
+ *  Created on: May 23, 2024
+ *      Author: peca
+ */
+
+#ifndef SRC_UARTMUX_H_
+#define SRC_UARTMUX_H_
+
+	#define MUX_GPIO_BITS 0b0111
+	#define MUX_O2_adr	0b001
+	#define MUX_H2S_adr	0b110
+	#define MUX_CO2_adr	0b101
+	typedef uint8_t MuxAdr_t;
+
+
+
+
+class UartMux {
+public:
+	UartMux();
+	virtual ~UartMux();
+
+	enum MuxAdr_t {
+		CO_adr,
+		H2S_adr,
+		CO2_adr,
+		itd_adr
+	};
+
+
+	void setAdr(MuxAdr_t adresa);	// prozovi uart mux adresu
+	MuxAdr_t getAdr();				// koja je trenutna adresa?
+
+	void blink(int mS);
+
+
+};
+
+#endif /* SRC_UARTMUX_H_ */
