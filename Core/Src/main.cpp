@@ -137,6 +137,7 @@ int main(void)
 				co->init(2000);
 
 				for (;;) {
+					mux->setAdr(CO_ADR);
 					for (int i = 0; i < 5; ++i) {
 						b->trep(5, 50);
 						if (co->getLedStatus()) {

@@ -155,7 +155,6 @@ int CO_100::getMaxRange() {
 int CO_100::getGasConcentrationPpm() {
 	uint16_t rezultat;
 	vector<uint8_t> reply = send(cmdReadGasConcentration);
-
 	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x86);		// reply header ok?
 	if (hdr) {
 		uint16_t ppm = (reply.at(6) * 256) + (reply.at(7));
@@ -329,3 +328,22 @@ void CO_100::sendCmd(const uint8_t *plainTxt, uint16_t size){
 	send(cmd);
 }
 
+
+bool CO_100::isReplyChecksumValid(std::vector<uint8_t> repl) {
+	uint8_t sum=0;
+	for (unsigned int i = 1; i < (repl.size()-1); ++i) {
+		// NOTA!!
+		// -- Petlja pocinje od JEDINICE a ne od nule. Ne sabira se nulti element (obicno je 0xFF)
+		// -- NE SABIRA SE POSLEDNJI element jer on je checksum
+		// VIDI DATASHEET -> Checksum
+		sum += repl.at(i);
+	}
+	sum = ~sum;	// bitwise not
+	sum = sum + 1;
+	if( sum == repl.at(repl.size()-1) ){
+		return true;
+	} else {
+		return false;
+	};
+
+}

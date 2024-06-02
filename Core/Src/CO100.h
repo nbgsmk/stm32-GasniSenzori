@@ -21,7 +21,7 @@ public:
 	CO_100();
 	virtual ~CO_100();
 
-	uint8_t rxB[50];								// bytes received from UART
+	uint8_t rxB[50];							// bytes received from UART
 
 	void init(uint32_t waitSensorStartup_mS);	// inicijalizuj senzor, podesi passive mode, proveri tip
 	void setActiveMode();
@@ -34,8 +34,8 @@ public:
 	int getGasConcentrationPpm();				// koncentracija gasa ppm
 	int getGasConcentrationMgM3();				// koncentracija gasa ug/m3
 	int getGasPercentageOfMax();				// koncentracija 0~100% od maksimalnog merenja senzora
-	float getTemperature();					// sve zajedno merimo
-	float getRelativeHumidity();					// sve zajedno merimo
+	float getTemperature();						// sve zajedno merimo
+	float getRelativeHumidity();				// sve zajedno merimo
 
 	// stm32 specific and debug only
 	void setSensorUart(UART_HandleTypeDef huart);
@@ -53,9 +53,9 @@ private:
 		uint8_t sign;
 	} sensorProperties;
 
-	void getSensorProperties_D7();			// popuni struct sa podacima o senzoru
-	std::vector<uint8_t> send(const CmdStruct_t txCmd);				// dummy - posalji komande senzoru
-
+	void getSensorProperties_D7();					// popuni struct sa podacima o senzoru
+	std::vector<uint8_t> send(const CmdStruct_t txCmd);				// posalji komande senzoru, cekaj odgovor
+	bool isReplyChecksumValid(std::vector<uint8_t> repl);
 
 };
 
