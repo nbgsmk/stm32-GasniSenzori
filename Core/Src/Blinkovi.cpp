@@ -46,7 +46,7 @@ void Blinkovi::trepCnt(uint32_t count, uint32_t ticks_on, uint32_t ticks_off){
 }
 
 
-void Blinkovi::trepPer(uint32_t count, uint32_t ticks_on, uint32_t ticks_off, uint32_t period){
+void Blinkovi::trepCntPer(uint32_t count, uint32_t ticks_on, uint32_t ticks_off, uint32_t period){
 	for(uint32_t i = 0; i < count; i++){
 		trep(ticks_on, ticks_off);
 	}

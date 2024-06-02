@@ -28,7 +28,7 @@ public:
 	void setPassiveMode();
 	void setLedOn();
 	void setLedOff();
-	void getLedStatus();
+	bool getLedStatus();
 
 	int getMaxRange();							// maksimalni raspon merenja senzora
 	int getGasConcentrationPpm();				// koncentracija gasa ppm

@@ -265,8 +265,14 @@ void CO_100::setLedOff() {
 /**
  * Sensor activity led will be off
  */
-void CO_100::getLedStatus() {
-	send(cmdRunningLightGetStatus);
+bool CO_100::getLedStatus() {
+	bool rezultat;
+	vector<uint8_t> reply = send(cmdRunningLightGetStatus);
+	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x8A);		// reply header ok?
+	if (hdr) {
+		rezultat = (reply.at(2) == 1) ? true : false;
+	}
+	return rezultat;
 }
 
 
@@ -312,9 +318,7 @@ std::vector<uint8_t> CO_100::send(const CmdStruct_t txStruct) {
 		    HAL_UART_Transmit(&hUrtDbg, jbg, sizeof(jbg), 500);
 		}
 	}
-
 	return reply;
-
 }
 
 

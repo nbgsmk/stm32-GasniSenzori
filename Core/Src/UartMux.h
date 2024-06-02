@@ -25,10 +25,10 @@
 //
 ///////////////////////
 
-#define CO_ADR 		1
+#define CO_ADR 		2
 #define H2S_ADR		3
-#define O2_ADR		2
-#define itd_adr		8
+#define O2_ADR		5
+#define itd_adr		7
 
 typedef uint8_t MuxAdr_t;
 

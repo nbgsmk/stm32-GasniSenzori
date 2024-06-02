@@ -22,8 +22,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+// stm32 specific
 #include "usbd_cdc_if.h"
 #include "Blinkovi.h"
+
+// hardware driver
 #include "CO100.h"
 #include "UartMux.h"
 
@@ -63,7 +66,6 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-const uint8_t txMsg[] = "Hello World! ";
 
 
 /* USER CODE END 0 */
@@ -110,6 +112,7 @@ int main(void)
 	while (1) {
 
 		Blinkovi *b = new Blinkovi();
+		UartMux *mux = new UartMux();
 		CO_100 *co = new CO_100();
 
 		HAL_Delay(2000);
@@ -118,29 +121,33 @@ int main(void)
 		b->trep(50, 200);
 
 
-		int blok = 2;
+		int blok = 1;
 		switch (blok) {
-			case 0: {		// talk to sensor
+
+			////////////////////
+			// TALK TO SENSOR(s)
+			////////////////////
+			case 1: {
+				b->trepCnt(blok, 5, 250);
+
+				// CO senzor
+				mux->setAdr(CO_ADR);
 				co->setSensorUart(huart1);
 				co->setDebugUart(huart2);
 				co->init(2000);
-				b->trep(5, 50);
-
-				int ppm = co->getGasConcentrationPpm();
-				int mg = co->getGasConcentrationMgM3();
-				int percOfMax = co->getGasPercentageOfMax();
-				float celsius = co->getTemperature();
-				float rh = co->getRelativeHumidity();
-
-				co->setLedOn();
-				co->getLedStatus();
-
-				b->trep(5, 50);
-				HAL_Delay(5000);
-				b->trep(5, 50);
-
 
 				for (;;) {
+					for (int i = 0; i < 5; ++i) {
+						b->trep(5, 50);
+						if (co->getLedStatus()) {
+							co->setLedOff();
+						} else {
+							co->setLedOn();
+						}
+						HAL_Delay(2000);
+					}
+
+					b->trep(5, 50);
 					b->trep(5, 50);
 					int ppm = co->getGasConcentrationPpm();
 					int mg = co->getGasConcentrationMgM3();
@@ -149,27 +156,49 @@ int main(void)
 					float rh = co->getRelativeHumidity();
 
 					HAL_Delay(1000);
+
+					// pretvaramo se da imamo jos neki senzor
+					b->trep(5, 50);
+					b->trep(5, 50);
+					b->trep(5, 50);
+					mux->setAdr(H2S_ADR);
+					HAL_Delay(3000);
+
 				}
 				break;
 			}
 
-			case 1: {		// talk to debug uart
+
+
+
+			/////////////////////
+			// TALK TO DEBUG UART
+			/////////////////////
+			case 2: {
+				for (;;) {
+					b->trepCnt(blok, 5, 250);
+
 					co->setSensorUart(huart2);
 					co->setDebugUart(huart2);
 					uint8_t s[] = {'z', 'e', 'c'};
 	//				uint8_t s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
-					for (;;) {
-						b->trep(5, 5);
-						co->sendCmd(s, sizeof(s));
-					}
-					break;
+
+					co->sendCmd(s, sizeof(s));
+				}
+				break;
 			}
 
-			case 2: {		// test mux
+
+
+
+			///////////////
+			// TEST UARTMUX
+			///////////////
+			case 3: {
 				UartMux *mux = new UartMux();
 				for ( ; ; ) {
+					b->trepCnt(blok, 5, 250);
 
-					b->trep(5, 50);
 					mux->setAdr(CO_ADR);
 					HAL_Delay(1000);
 
@@ -340,8 +369,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, UartMuX_3_Pin|UartMuX_2_Pin|UartMuX_1_Pin|SMUX_0_Pin
-                          |SMUX_1_Pin|SMUX_2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, UartMuX_s3_Pin|UartMuX_s2_Pin|UartMuX_s1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : BOARD_LED_Pin */
   GPIO_InitStruct.Pin = BOARD_LED_Pin;
@@ -350,10 +378,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(BOARD_LED_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : UartMuX_3_Pin UartMuX_2_Pin UartMuX_1_Pin SMUX_0_Pin
-                           SMUX_1_Pin SMUX_2_Pin */
-  GPIO_InitStruct.Pin = UartMuX_3_Pin|UartMuX_2_Pin|UartMuX_1_Pin|SMUX_0_Pin
-                          |SMUX_1_Pin|SMUX_2_Pin;
+  /*Configure GPIO pins : UartMuX_s3_Pin UartMuX_s2_Pin UartMuX_s1_Pin */
+  GPIO_InitStruct.Pin = UartMuX_s3_Pin|UartMuX_s2_Pin|UartMuX_s1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

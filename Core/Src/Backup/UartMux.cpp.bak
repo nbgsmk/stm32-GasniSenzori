@@ -5,8 +5,10 @@
  *      Author: peca
  */
 
-#include <stdint.h>
+// stm32 specific
+#include "main.h"
 
+// hardware driver
 #include "UartMux.h"
 
 UartMux::UartMux() {
@@ -18,32 +20,22 @@ UartMux::~UartMux() {
 }
 
 
-
-MuxAdr_t adr;
-
 void UartMux::setAdr(MuxAdr_t muxAdresa){
-	adr = muxAdresa;
-	switch (muxAdresa) {
-		case CO_adr:
-			// gpio setuj
-//			HAL_GPIO_WritePin(MX_1_GPIO_Port, GPIO_Pin, PinState), GPIO_Pin)
-			break;
+	muxAdresa--;	// oduzmem 1 jer su s3-s1=[0..7] a nazivi uart porova=[1..8]
+	currentAddress = muxAdresa;
+	uint16_t rez = 0;
+	rez = (muxAdresa & 0b001) ? (rez | UartMuX_1_Pin) : rez;
+	rez = (muxAdresa & 0b010) ? (rez | UartMuX_2_Pin) : rez;
+	rez = (muxAdresa & 0b100) ? (rez | UartMuX_3_Pin) : rez;
 
-		case H2S_adr:
-			// gpio setuj
-			break;
-
-		case CO2_adr:
-			// gpio setuj
-			break;
-
-		default:
-			// i tako dalje
-			break;
-	};
-
+	// stm32 specific
+	HAL_GPIO_WritePin(GPIOB, UartMuX_1_Pin|UartMuX_2_Pin|UartMuX_3_Pin, GPIO_PIN_RESET);	// write zero
+	HAL_GPIO_WritePin(GPIOB, rez, GPIO_PIN_SET);	// set only necessary bits
 
 }
 
 
+MuxAdr_t UartMux::getAdr() {
+	return currentAddress;
+}
 

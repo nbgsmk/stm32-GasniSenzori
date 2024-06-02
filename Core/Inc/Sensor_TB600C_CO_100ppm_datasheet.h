@@ -405,7 +405,7 @@
 	//	0x75	8	Checksum
 	//
 	// NOTE
-	// Status value 1 (light on), 0 (light off
+	// Status value 1 (light on), 0 (light off)
 
 
 #endif /* SENSOR_TB600C_CO_100PPM_H_ */

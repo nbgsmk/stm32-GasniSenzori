@@ -59,18 +59,12 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define BOARD_LED_Pin GPIO_PIN_13
 #define BOARD_LED_GPIO_Port GPIOC
-#define UartMuX_3_Pin GPIO_PIN_1
-#define UartMuX_3_GPIO_Port GPIOB
-#define UartMuX_2_Pin GPIO_PIN_2
-#define UartMuX_2_GPIO_Port GPIOB
-#define UartMuX_1_Pin GPIO_PIN_10
-#define UartMuX_1_GPIO_Port GPIOB
-#define SMUX_0_Pin GPIO_PIN_12
-#define SMUX_0_GPIO_Port GPIOB
-#define SMUX_1_Pin GPIO_PIN_13
-#define SMUX_1_GPIO_Port GPIOB
-#define SMUX_2_Pin GPIO_PIN_14
-#define SMUX_2_GPIO_Port GPIOB
+#define UartMuX_s3_Pin GPIO_PIN_1
+#define UartMuX_s3_GPIO_Port GPIOB
+#define UartMuX_s2_Pin GPIO_PIN_2
+#define UartMuX_s2_GPIO_Port GPIOB
+#define UartMuX_s1_Pin GPIO_PIN_10
+#define UartMuX_s1_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
