@@ -202,16 +202,16 @@
 	//
 	//	0xFF	0	Start bit
 	//	0x86	1	Command
-	//	0x00	2	High gas concentration (mg/m3)		(WARN u drugom pdf-u pise ug/m3 -> vise nisam siguran gde je taj fajl, ali ovo je od Baneta)
-	//	0x2A	3	Low gas concentration (mg/m3)		(WARN u drugom pdf-u pise ug/m3 -> vise nisam siguran gde je taj fajl, ali ovo je od Baneta)
+	//	0x00	2	High gas concentration (mg/m3)		// STOPSHIP NOTA (1**)
+	//	0x2A	3	Low gas concentration (mg/m3)		// STOPSHIP NOTA (1**)
 	//	0x00	4	Full range high
 	//	0x00	5	Full range low
-	//	0x00	6	High gas concentration (ppm)		(WARN u drugom pdf-u pise ppb -> vise nisam siguran gde je taj fajl, ali ovo je od Baneta)
-	//	0x20	7	Low gas concentration (ppm)			(WARN u drugom pdf-u pise ppb -> vise nisam siguran gde je taj fajl, ali ovo je od Baneta)
+	//	0x00	6	High gas concentration (ppm)		// STOPSHIP NOTA (1**)
+	//	0x20	7	Low gas concentration (ppm)			// STOPSHIP NOTA (1**)
 	//	0x30	8	Checksum
 	// NOTE:
 	// Checksum: Add 1 ~ 7 digits of data to generate an 8-bit data, invert each bit, add 1 at the end
-	// Gas concentration = (gas concentration high bit * 256 + gas concentration bit) / 10^x		(WARN u drugom pdf-u nije pominjalo deljenje sa 10x -> vise nisam siguran gde je taj fajl, ali ovo je od Baneta)
+	// Gas concentration = (gas concentration high bit * 256 + gas concentration bit) / 10^x		// STOPSHIP NOTA (1**)
 	// where "x"= number of decimal places. The number of decimal places can be read by D1 or D7 command.
 	// (The high and low concentrations need to be converted from hexadecimal to decimal and then brought into this formula to calculate)
 
@@ -229,12 +229,12 @@
 	//
 	//	0xFF	0	Start bit
 	//	0x87	1	Command
-	//	0x00	2	High gas concentration (mg/m3)		(WARN u drugom pdf-u pise ug/m3)
-	//	0x2A	3	Low gas concentration (mg/m3)		(WARN u drugom pdf-u pise ug/m3)
+	//	0x00	2	High gas concentration (mg/m3)		// STOPSHIP NOTA (1**)
+	//	0x2A	3	Low gas concentration (mg/m3)		// STOPSHIP NOTA (1**)
 	//	0x03	4	Full range high
 	//	0xE8	5	Full range low
-	//	0x00	6	High gas concentration (ppm)		(WARN u drugom pdf-u pise ppb)
-	//	0x20	7	Low gas concentration (ppm)			(WARN u drugom pdf-u pise ppb)
+	//	0x00	6	High gas concentration (ppm)		// STOPSHIP NOTA (1**)
+	//	0x20	7	Low gas concentration (ppm)			// STOPSHIP NOTA (1**)
 	//	0x09	8	Temperature high
 	//	0xC4	9	Temperature low
 	//	0x13	10	Humidity high
@@ -244,7 +244,7 @@
 	// NOTE:
 	// Checksum: 1 ~ 11 bits of data are added to generate an 8-bit data, each bit is inverted, and 1 is added at the end
 	//
-	// Gas concentration = gas concentration high bit * 256 + gas concentration (valjda -low- prim. prev.)
+	// Gas concentration = gas concentration high bit * 256 + gas concentration			// STOPSHIP NOTA (2**)
 	// (The high and low concentrations need to be converted from hexadecimal to decimal and then brought into this formula to calculate)
 	//
 	// Temperature is signed data with two decimal places, the unit is (℃ -Celsius). Pseudo code calculation formula:
@@ -257,7 +257,7 @@
 	//	COMMAND 7
 	//	Get the current temperature and humidity
 	//	const std::vector<uint8_t> read_temp_and_humidity = {
-	//			// FIXME	- NE PISE KOMANDA??? (u dva razlicita datasheeta ne pise! Neko je zezno' copy-paste - prim. prev.)
+	//			// NE PISE KOMANDA?! (u dva razlicita datasheeta ne pise! Neko je zezno' copy-paste - prim. prev.)
 	//	};
 	// const CmdStruct_t readTempAndHumidity = { read_temp_and_humidity, 4};
 	// RETURN VALUE:
@@ -272,13 +272,13 @@
 	// T = (float) ( (int)((0x0A<<8) | 0x09)) / 100
 	//
 	// Humidity is data without sign and two decimal places, the unit is (rh%). Pseudo code calculation formula:
-	// Rh = (float) ( (uint)((0x0A<<8) | 0x09)) / 100
+	// Rh = (float) ( (uint)((0x0A<<8) | 0x09)) / 100		(valjda misli ((bit[2]<<8) | bit[3]) - prim. prev.)
 
 
 	//	COMMAND 8
 	//	Get the current temperature and humidity with calibration
 	//	const std::vector<uint8_t> read_temp_and_humidity_with_calibration = {
-	//			 // FIXME	- NE PISE KOMANDA??? (u dva razlicita datasheeta ne pise! Neko je zezno' copy-paste - prim. prev.)
+	//			 // NE PISE KOMANDA?! (u dva razlicita datasheeta ne pise! Neko je zezno' copy-paste - prim. prev.)
 	//	};
 	// const CmdStruct_t readTempAndHumidityWithCalibration = { read_temp_and_humidity_with_calibration, 5};
 	// RETURN VALUE:
@@ -296,13 +296,13 @@
 	// T = (float) ( (int)((0x0A<<8) | 0x09)) / 100
 	//
 	// Humidity is data without sign and two decimal places, the unit is (rh%). Pseudo code calculation formula:
-	// Rh = (float) ( (uint)((0x0A<<8) | 0x09)) / 100
+	// Rh = (float) ( (uint)((0x0A<<8) | 0x09)) / 100		(valjda misli ((bit[2]<<8) | bit[3]) - prim. prev.)
 
 
 	//	COMMAND 9
 	//	Get the current version number
 	//	const std::vector<uint8_t> read_version = {
-	//			 // FIXME	- NE PISE KOMANDA??? (u dva razlicita datasheeta ne pise! Neko je zezno' copy-paste - prim. prev.)
+	//			 // NE PISE KOMANDA?! (u dva razlicita datasheeta ne pise! Neko je zezno' copy-paste - prim. prev.)
 	//	};
 	// const CmdStruct_t readVersion = { read_version, 6};
 	// RETURN VALUE:
@@ -313,7 +313,7 @@
 	//	0x00	3
 	//	0x10	4
 	//	0x01	5
-	// (Ne pise sta su, pretpostavljam da ih treba concatenate kao stringove i to je verzija - prim. prev.)
+	// (Ne pise sta su, valjda ih treba concatenate kao stringove i to je kao fol verzija - prim. prev.)
 
 
 
@@ -325,32 +325,32 @@
 	//
 	//	0xFF	0	Start bit
 	//	0x86	1	Command
-	//	0x00	2	High gas concentration (mg/m3)	(WARN u drugom pdf-u je pisalo ug/m3 - prim. prev. -> vise nisam siguran gde je taj fajl, ali ovo je od Baneta)
-	//	0x2A	3	Low gas concentration (mg/m3)	(WARN u drugom pdf-u je pisalo ug/m3 - prim. prev. -> vise nisam siguran gde je taj fajl, ali ovo je od Baneta)
+	//	0x00	2	High gas concentration (mg/m3)		// STOPSHIP NOTA (1**)
+	//	0x2A	3	Low gas concentration (mg/m3)		// STOPSHIP NOTA (1**)
 	//	0x00	4	Full range high
 	//	0x00	5	Full range low
-	//	0x00	6	High gas concentration (ppm)	(WARN u drugom pdf-u je pisalo ppb - prim. prev. -> vise nisam siguran gde je taj fajl, ali ovo je od Baneta)
-	//	0x20	7	Low gas concentration (ppm)		(WARN u drugom pdf-u je pisalo ppb - prim. prev. -> vise nisam siguran gde je taj fajl, ali ovo je od Baneta)
+	//	0x00	6	High gas concentration (ppm)		// STOPSHIP NOTA (1**)
+	//	0x20	7	Low gas concentration (ppm)			// STOPSHIP NOTA (1**)
 	//	0x30	8	Checksum
 	//
 	// NOTE:
 	// Checksum: 1 ~ 11 bits of data are added to generate an 8-bit data, each bit is inverted, and 1 is added at the end. (ocigledno misli "add 1~8 bits - prim. prev)
 	//
-	// Gas concentration = gas concentration high bit * 256 + gas concentration bit) / 10^x		(WARN u drugom pdf-u nije pominjalo deljenje sa 10^x -> vise nisam siguran gde je taj fajl, ali ovo je od Baneta)
+	// Gas concentration = gas concentration high bit * 256 + gas concentration bit) / 10^x		// STOPSHIP NOTA (1**)
 	// where "x" = The number of decimal places; The number of decimal places can be read by D1 or D7 command
 	// (The high and low concentrations need to be converted from hexadecimal to decimal and then brought into this formula to calculate)
 
 
 
 	//////////////////////
-	// LOW POWER SWITCHING	// TODO	- ovo cemo da implementiramo ako bude potrebno
+	// LOW POWER SWITCHING	// TODO	- ovo cemo da implementiramo samo ako bude potrebno
 	//////////////////////
 	//
 	// Enter sleep mode
-	//
+	// ...
 	// Exit sleep mode
-	// NOTE
-	// After exiting sleep mode, it takes 5 seconds to recover, no data within 5 sec.
+	// ...
+	// It takes 5 seconds to recover after exiting sleep mode, no data within 5 seconds
 
 
 
@@ -409,5 +409,37 @@
 	// NOTE
 	// Status value 1 (light on), 0 (light off)
 
+
+
+/*
+
+
+NOTA (1**)
+----------
+COMMAND 5 reply:
+Pdf sa sajta koji sam ja slucajno nasao na netu:
+https://ecsense.com/wp-content/uploads/2021/03/TB600C_CO_100ppm_Technical-Specification20200513.pdf
+- pise da su jedinice ug/m3 i ppb
+- Gas concentration = (high * 256) + (gas concentration)
+ (NE DELI GA SA 10^x)
+
+
+NOTA (2**)
+----------
+COMMAND 6 reply:
+Pdf sa sajta koji sam ja slucajno nasao na netu:
+https://ecsense.com/wp-content/uploads/2021/03/TB600C_CO_100ppm_Technical-Specification20200513.pdf
+- pise da su jedinice ug/m3 i ppb
+- Gas concentration = ... za ovu komandu ne pominje deljenje sa 10^x, ni u Banetovom fajlu ni ovde. Da li je slucajno-greska u pdf-u ili je namerna razlika izmedju command 5 i command 6?
+
+
+
+
+// STOPSHIP NOTA (1**)
+
+
+
+
+ */
 
 #endif /* SENSOR_TB600C_CO_100PPM_H_ */

@@ -184,7 +184,7 @@ int main(void)
 					uint8_t s[] = {'z', 'e', 'c'};
 	//				uint8_t s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
 
-					co->sendCmd(s, sizeof(s));
+					co->sendRawCommand(s, sizeof(s));
 				}
 				break;
 			}
