@@ -6,7 +6,7 @@
 #ifndef SENSOR_TB600C_CO_100PPM_H_
 #define SENSOR_TB600C_CO_100PPM_H_
 
-#define SENSOR_DATA_ERROR ((uint16_t)-1)
+#define SENSOR_DATA_ERROR (int)-1
 
 	struct CmdStruct_t{
 		std::vector<uint8_t> cmd;

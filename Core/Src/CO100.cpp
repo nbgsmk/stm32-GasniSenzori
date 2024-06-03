@@ -43,6 +43,8 @@ void CO_100::setSensorUart(UART_HandleTypeDef sensorUart) {
 	hUrt = sensorUart;
 
 }
+
+// stm32 specific
 void CO_100::setDebugUart(UART_HandleTypeDef debugUart) {
 	hUrtDbg = debugUart;
 
@@ -66,7 +68,7 @@ void CO_100::init(uint32_t waitSensorStartup_mS) {
 
 
 /**
- * Query parameters from the sensor and populate struct
+ * Query parameters from sensor and populate struct
  */
 void CO_100::getSensorProperties_D7() {
 	//
@@ -115,6 +117,7 @@ void CO_100::getSensorProperties_D7() {
 
 
 	} else {
+		// stm32 specific
 		// ENABLE EXCEPTIONS for stm32
 		// Right click the project -> Properties -> C/C++ Build -> Settings -> Tool Settings -> MCU G++ Compiler -> Miscellaneous
 		// add flag -fexceptions
@@ -153,7 +156,7 @@ int CO_100::getMaxRange() {
  * @return current gas concentration in ppm
  */
 int CO_100::getGasConcentrationPpm() {
-	uint16_t rezultat;
+	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentration);
 	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x86);		// reply header ok?
 	if (hdr) {
@@ -171,7 +174,7 @@ int CO_100::getGasConcentrationPpm() {
  * @return current gas concentration in ppm
  */
 int CO_100::getGasConcentrationMgM3() {
-	uint16_t rezultat;
+	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentration);
 
 	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x86);		// reply header ok?
@@ -191,7 +194,7 @@ int CO_100::getGasConcentrationMgM3() {
  * @return gas concentration normalized to 0~100% of max measurement range
  */
 int CO_100::getGasPercentageOfMax() {
-	uint16_t rezultat;
+	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentration);
 
 	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x86);		// reply header ok?
@@ -207,10 +210,10 @@ int CO_100::getGasPercentageOfMax() {
 
 
 /**
- * @return temperature from combined reading (see datasheet)
+ * @return temperature from combined reading (datasheet Command 6)
  */
 float CO_100::getTemperature() {
-	uint16_t rezultat;
+	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
 
 	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x87);		// reply header ok?
@@ -226,10 +229,10 @@ float CO_100::getTemperature() {
 
 
 /**
- * @return relative humidity from combined reading (see datasheet)
+ * @return relative humidity from combined reading (datasheet Command 6)
  */
 float CO_100::getRelativeHumidity() {
-	uint16_t rezultat;
+	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
 
 	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x87);		// reply header ok?
@@ -265,6 +268,7 @@ void CO_100::setLedOff() {
  * Sensor activity led will be off
  */
 bool CO_100::getLedStatus() {
+	// TODO mogao bi da vraca enum on, off, error
 	bool rezultat;
 	vector<uint8_t> reply = send(cmdRunningLightGetStatus);
 	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x8A);		// reply header ok?
@@ -290,13 +294,13 @@ std::vector<uint8_t> CO_100::send(const CmdStruct_t txStruct) {
 	std::copy(txStruct.cmd.begin(), txStruct.cmd.end(), txArr);
 
 	// stm32 specific
-	// send bytes
+	// send bytes to debug port
     uint8_t c[] = "\n cmd=";
     HAL_UART_Transmit(&hUrtDbg, c, sizeof(c), 500);
     HAL_UART_Transmit(&hUrtDbg, txArr, sizeof(txArr), 500);
 
 
-    // send command and immediately wait to receive tx.expectedReplyLen bytes
+    // send command to sensor and immediately wait to receive tx.expectedReplyLen bytes
     std::vector<uint8_t> reply;
     HAL_UART_Transmit(&hUrt, txArr, sizeof(txArr), 500);
 	if (txStruct.expectedReplyLen > 0) {
@@ -322,7 +326,7 @@ std::vector<uint8_t> CO_100::send(const CmdStruct_t txStruct) {
 
 
 
-void CO_100::sendCmd(const uint8_t *plainTxt, uint16_t size){
+void CO_100::sendRawCommand(const uint8_t *plainTxt, uint16_t size){
 	std::vector<uint8_t> s(plainTxt, plainTxt + size);
 	CmdStruct_t cmd = { s, size };
 	send(cmd);
@@ -330,12 +334,12 @@ void CO_100::sendCmd(const uint8_t *plainTxt, uint16_t size){
 
 
 bool CO_100::isReplyChecksumValid(std::vector<uint8_t> repl) {
-	uint8_t sum=0;
+	uint8_t sum = 0;
 	for (unsigned int i = 1; i < (repl.size()-1); ++i) {
-		// NOTA!!
+		// NOTA:
 		// -- Petlja pocinje od JEDINICE a ne od nule. Ne sabira se nulti element (obicno je 0xFF)
 		// -- NE SABIRA SE POSLEDNJI element jer on je checksum
-		// VIDI DATASHEET -> Checksum
+		// Vidi objasnjenje u datasheet-u
 		sum += repl.at(i);
 	}
 	sum = ~sum;	// bitwise not

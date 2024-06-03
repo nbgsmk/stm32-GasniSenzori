@@ -40,7 +40,7 @@ public:
 	// stm32 specific and debug only
 	void setSensorUart(UART_HandleTypeDef huart);
 	void setDebugUart(UART_HandleTypeDef huart);
-	void sendCmd(const uint8_t *plainTxt, uint16_t size);
+	void sendRawCommand(const uint8_t *plainTxt, uint16_t size);
 
 
 private:

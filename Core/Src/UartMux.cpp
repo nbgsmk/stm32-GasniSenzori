@@ -20,8 +20,12 @@ UartMux::~UartMux() {
 }
 
 
+/**
+ * Aktiviram UartMux port po zelji [1..8]  (tupsoni! na plocici pise [1..8])
+k *
+ */
 void UartMux::setAdr(MuxAdr_t muxAdresa){
-	muxAdresa--;	// oduzmem 1 jer su nazivi uart porova na stampanoj plocici[1..8] (
+	muxAdresa--;	// oduzmem 1 jer na stampanoj plocici pise [1..8] a hardverski je [0..7]
 	muxAdresa = muxAdresa % 8;
 	currentAddress = muxAdresa;
 	uint16_t rez = 0;
